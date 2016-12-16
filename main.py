@@ -1,5 +1,6 @@
 """
-    Miitcher
+    Packman Clone
+    by Miitcher
     For fun project doing a Packman clone.
     
     Python 3.4
