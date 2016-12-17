@@ -22,7 +22,16 @@
 from PySide.QtGui import QSound
 
 soundDict = []
-soundDict['musicBeginning'] = QSound('musicBeginning')
+soundDict['musicBeginning'] = QSound('sounds/musicBeginning.wav')
+soundDict['musicEnd'] = QSound('musicEnd')
+soundDict['eatBall'] = QSound('eatBall')
+soundDict['eatPowerupBall'] = QSound('eatPowerupBall')
+soundDict['eatFruit'] = QSound('eatFruit')
+soundDict['characterDie'] = QSound('characterDie')
+soundDict['ghostChasing'] = QSound('ghostChasing')
+soundDict['ghostChased'] = QSound('ghostChased')
+soundDict['ghostEaten'] = QSound('ghostEaten')
+# soundDict[''] = QSound('')
 
 def playSound(soundName):
     soundDict[soundName].play()
