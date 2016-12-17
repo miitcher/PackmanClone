@@ -19,9 +19,11 @@
         one class.
 """
 
+from PySide.QtGui import QSound
 
-def playMusic():
-    pass
+soundDict = []
+soundDict['musicBeginning'] = QSound('musicBeginning')
 
-def playEatingSound():
-    pass
+def playSound(soundName):
+    soundDict[soundName].play()
+    soundDict[soundName].stop()
