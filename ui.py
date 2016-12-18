@@ -5,7 +5,6 @@
         http://stackoverflow.com/questions/19122345/to-convert-string-to-variable-name
 """
 
-import PySide
 from PySide.QtCore import Qt
 
 
@@ -14,17 +13,18 @@ def keyPressed(key, currentWidget):
 
 class SettingsError(Exception):
     pass
-    """def __init__(self, expression, message):
-        self.expression = expression
-        self.message = message"""
 
 class Settings():
+    """
+    Settings stored in dictionaries:
+        self.keySettingsDict
+        self.otherSettingsDict
+    How to change settings:
+        self.keySettingsDict[setting] = keySList
+        self.otherSettingsDict[setting] = valueList
+        --> After changing a dictionary; writeSettingsToFile().
+    """
     def __init__(self):
-        """
-        Settings stored in dictionaries:
-            self.keySettingsDict
-            self.otherSettingsDict
-        """
         try:
             self.getSettingsFromFile()
         except FileNotFoundError:
@@ -78,22 +78,11 @@ class Settings():
         with open("settings.ini", "w") as f:
             f.write("# SETTINGS\nKEYS")
             self.writeSettingsFromOneDict(f, self.keySettingsDict)
-            """
-            for i in self.keySettingsDict:
-                line = "\n" + i + " = "
-                c = 1
-                for k in self.keySettingsDict[i]:
-                    if c > 1:
-                        line += ", "
-                    line += k.replace("Key_","")
-                    c += 1
-                f.write(line)
-            """
             f.write("\nOTHER")
             self.writeSettingsFromOneDict(f, self.otherSettingsDict)
-        print("Settings written to file")
     
     def writeSettingsFromOneDict(self, f, dict):
+        # just used in module writeSettingsToFile
         for i in dict:
             line = "\n" + i + " = "
             c = 1
@@ -103,14 +92,6 @@ class Settings():
                 line += v.replace("Key_","")
                 c += 1
             f.write(line)
-    
-    def findKeyMeaning(self, key):
-        keyS = str(key).split(".")[-1]
-        for i in self.keySettingsDict:
-            for k in self.keySettingsDict[i]:
-                if k == keyS:
-                    return(i)
-        return None
     
     def setDefaultSettings(self):
         # creates the "settings.ini"-file, or overwrites it if it exists
@@ -125,48 +106,51 @@ class Settings():
         "Resolution" : ["1280x720"]}
         self.writeSettingsToFile()
     
-    def changeKeySetting(self, setting, keySList):
-        self.keySettingsDict[setting] = keySList
-    
-    def changeOtherSetting(self, setting, valueList):
-        self.otherSettingsDict[setting] = valueList
-    
-    def addKeyToKeySetting(self, setting, keyS):
-        keySList = self.keySettingsDict[setting]
-        keySList.append(keyS)
-        self.keySettingsDict[setting] = keySList
-    
-    def unasignKeysForOtherSettings(self, choosenSetting, keySListUnasign):
-        keysUnasigned = False
+    def checkIfKeysUsedByOtherSetting(self, choosenSetting, keySListRef):
+        # returns dictionary of lists of used keys, with setting as index in dictionary
+        usedKeysDict = {}
         for i in self.keySettingsDict:
             if i == choosenSetting:
                 continue
             keySList = self.keySettingsDict[i]
-            removeKeySList = []
+            usedKeySList = []
             for k in keySList:
-                if k in keySListUnasign:
-                    removeKeySList.append(k)
-                    keysUnasigned = True
+                if k in keySListRef:
+                    usedKeySList.append(k)
+            if usedKeySList:
+                usedKeysDict[i] = usedKeySList
+        if not usedKeysDict:
+            return(None)
+        else:
+            return(usedKeysDict)
+    
+    def unassignKeysForSettings(self, removeKeySDict):
+        # used with resulting dictionary from method checkIfKeysUsedByOtherSetting
+        for i in removeKeySDict:
+            removeKeySList = removeKeySDict[i]
+            keySList = self.keySettingsDict[i]
             for k in removeKeySList:
                 keySList.remove(k)
             self.keySettingsDict[i] = keySList
-        return keysUnasigned
+    
+    def findKeyMeaning(self, key):
+        keyS = str(key).split(".")[-1]
+        for i in self.keySettingsDict:
+            for k in self.keySettingsDict[i]:
+                if k == keyS:
+                    return(i)
+        return None
 
 
 if __name__ == '__main__':
     settings = Settings()
-    print(settings)
     settings.setDefaultSettings()
-    print(settings)
+    settings.writeSettingsToFile()
+    
+    print(settings.keySettingsDict)
+    print(settings.otherSettingsDict)
+    
     print("meaning for Qt.Key_S: ",settings.findKeyMeaning(Qt.Key_S))
-    settings.changeKeySetting("MoveDown", ["Key_O", "Key_9"])
-    settings.changeOtherSetting("Resolution", ["1920x1080"])
-    settings.writeSettingsToFile()
-    print(settings)
-    settings.addKeyToKeySetting("MoveUp", "Key_Q")
-    settings.writeSettingsToFile()
-    print(settings)
-    settings.unasignKeysForOtherSettings("MoveDown", ["Key_Up", "Key_9", "Key_Q", "Key_S"])
-    settings.writeSettingsToFile()
-    print(settings)
+    settings.checkIfKeysUsedByOtherSetting("MoveDown", ["Key_Up", "Key_9", "Key_Q", "Key_S"])
+    
     
