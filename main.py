@@ -1,7 +1,7 @@
 """
-    Packman Clone
+    Pacman Clone
     by Miitcher
-    For fun project doing a Packman clone.
+    For fun project doing a Pacman clone.
     
     Python 3.4
     PySide #
