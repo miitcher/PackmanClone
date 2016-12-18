@@ -12,6 +12,8 @@
             are colours: red, cyan, pink and orange
 """
 
+from ui import Settings
+
 import sys
 from PySide.QtCore import *
 from PySide.QtGui import *
@@ -20,70 +22,156 @@ from PySide.QtGui import *
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setupWindow()
-        self.goToMenuW()
-    
-    def setupWindow(self):
-        self.setCursor(Qt.ArrowCursor)
         self.setWindowTitle("Packman Clone")
+        #TODO: find minimum size
         #self.setMinimumSize(500, 500)
-        self.setWindowState(self.windowState() | Qt.WindowFullScreen)
-        """
-        screenGeometry = QApplication.desktop().screenGeometry()
-        self.screenWidth = screenGeometry.width()
-        self.screenHeight = screenGeometry.height()
-        """
     
-    def goToMenuW(self):
+    def setupWindow(self, settings):
+        self.settings = settings
+        self.getSettings()
+        self.resize(round(self.width*self.menuScale), round(self.height*self.menuScale))
+        self.toMenuW()
+    
+    def getSettings(self):
+        (self.width, self.height) = self.settings.getResolution()
+        self.menuScale = self.settings.getMenuScale()
+        self.windowMode = self.settings.getWindowMode()
+    
+    def toMenuW(self):
         self.setCursor(Qt.ArrowCursor)
         self.menuW = MenuW(self)
+        self.menuW.setupWidget()
         self.setCentralWidget(self.menuW)
     
-    def goToGameW(self):
+    def toGameW(self):
         self.setCursor(Qt.BlankCursor)
         self.GameW = GameW(self)
+        self.GameW.setupWidget()
         self.setCentralWidget(self.GameW)
     
-    def goToHighscoresW(self):
+    def toSettingsW(self):
+        self.setCursor(Qt.ArrowCursor)
+        self.SettingsW = SettingsW(self)
+        self.SettingsW.setupWidget()
+        self.setCentralWidget(self.SettingsW)
+    
+    def toHighscoresW(self):
         self.setCursor(Qt.ArrowCursor)
         self.HighscoresW = HighscoresW(self)
+        self.HighscoresW.setupWidget()
         self.setCentralWidget(self.HighscoresW)
+
 
 class OwnW(QWidget):
     def __init__(self, MWindow):
         super().__init__()
         self.MWindow = MWindow
-    
-    def setupWidget(self):
-        # method defined in child
-        pass
+        self.setAutoFillBackground(True)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), Qt.black)
+        self.setPalette(p)
 
 class MenuW(OwnW):
     def __init__(self, MWindow):
         super().__init__(MWindow)
     
     def setupWidget(self):
-        pass
+        StartGameButton = QPushButton("START GAME")
+        SettingsButton = QPushButton("SETTINGS")
+        HighscoresButton = QPushButton("HIGHSCORES")
+        
+        StartGameButton.clicked.connect(self.MWindow.toGameW)
+        SettingsButton.clicked.connect(self.MWindow.toSettingsW)
+        HighscoresButton.clicked.connect(self.MWindow.toHighscoresW)
+        
+        vbox = QVBoxLayout()
+        vbox.addStretch(1)
+        vbox.addWidget(StartGameButton)
+        vbox.addWidget(SettingsButton)
+        vbox.addWidget(HighscoresButton)
+        vbox.addStretch(1)
+        
+        hbox = QHBoxLayout()
+        hbox.addStretch(1)
+        hbox.addLayout(vbox)
+        hbox.addStretch(1)
+        
+        self.setLayout(hbox)
 
-class GameW(QWidget):
+class GameW(OwnW):
     def __init__(self, MWindow):
         super().__init__(MWindow)
     
     def setupWidget(self):
-        # coordinates at beginning: (x,y)
-        self.ballCoordinates = self.generateBallCoordinateList()
-        self.powerupCoordinates = [(1,3), (26,3), (1,23), (26,23)]
-        self.ghostCoordinates = [(13.5,11),(11.5,14),(13.5,14),(15.5,14)]
-        self.characterCoordinate = (13.5,23)
-        self.wallEdgeCoordinates = self.generateWallEdgeCoordinateList()
-        self.ghostWallEdgeCoordinates = self.generateGhostWallEdgeCoordinateList()
-        
+        """
+        There are generel coordinates and pixel coordinates.
+        These coordinates will be called "GCor" and "PCor".
+        Both have their origo in the screens upper-left-corner,
+        and the horisontal (width) measure is x,
+        and the vertical (height) is y as: "(x,y)".
+        """
+        print("setting up game")
+        self.generateGCors()
+        self.makePCorsFromGCors()
+        print("things counted")
+        print(self.pacmanGCor)
+        print(self.PToG)
+        print(self.pacmanPCor)
+        self.initItems()
         # items to draw
         self.food = [] # balls, powerups, fruit
         self.characters = [] # ghosts, character
         self.walls = [] # regular-, ghost-walls
+        
+        #self.MWindow.windowMode
     
-    def generateBallCoordinateList(self):
+    def generateGCors(self):
+        self.pacmanGCor = [(13.5,23)]
+        self.ballGCors = self.generateBallGCoordinateList()
+        self.powerupGCors = [(1,3), (26,3), (1,23), (26,23)]
+        self.ghostGCors = [(13.5,11),(11.5,14),(13.5,14),(15.5,14)]
+        self.wallEdgeGCors = self.generateWallEdgeGCoordinateList()
+        self.ghostWallEdgeGCors = self.generateGhostWallEdgeGCoordinateList()
+    
+    def makePCorsFromGCors(self):
+        """
+        The GCor game-areas coordinate ranges are:
+            x: [0, 27], y: [0, 30]
+        We give extra space, in GCor units, to the
+        horisontal 2 and the vertical 5.
+        Now our GCor side lenghts are:5
+            x: 29, y: 35
+        """
+        xLenGCor = 29
+        yLenGCor = 35
+        xRatio = self.MWindow.width  / xLenGCor
+        yRatio = self.MWindow.height / yLenGCor
+        # We determine the conversion between GCor
+        # and PCor with the limiting length.
+        if xRatio > yRatio:
+            # height (y) limits
+            self.PToG = yRatio
+        else:
+            # width (x) limits
+            self.PToG = xRatio
+        
+        self.pacmanPCor         = self.multiplyTuppleListWithPToG(self.pacmanGCor)
+        self.ballPCors          = self.multiplyTuppleListWithPToG(self.ballGCors)
+        self.powerupPCors       = self.multiplyTuppleListWithPToG(self.powerupGCors)
+        self.ghostPCors         = self.multiplyTuppleListWithPToG(self.ghostGCors)
+        self.wallEdgePCors      = self.multiplyTuppleListWithPToG(self.wallEdgeGCors)
+        self.ghostWallEdgePCors = self.multiplyTuppleListWithPToG(self.ghostWallEdgeGCors)
+    
+    def multiplyTuppleListWithPToG(self, list):
+        newList = []
+        for tupple in list:
+            newList.append((tupple[0]*self.PToG, tupple[1]*self.PToG))
+        return(newList)
+    
+    def initItems(self):
+        pass
+    
+    def generateBallGCoordinateList(self):
         """
         rows and columns start at count 0
         and increase to the right and down
@@ -141,7 +229,7 @@ class GameW(QWidget):
             l.append((i,28))
         return l
     
-    def generateWallEdgeCoordinateList(self):
+    def generateWallEdgeGCoordinateList(self):
         """
         rows and columns start at count 0
         and increase to the right and down
@@ -217,7 +305,7 @@ class GameW(QWidget):
             l.append((i,23))
         return l
     
-    def generateGhostWallEdgeCoordinateList(self):
+    def generateGhostWallEdgeGCoordinateList(self):
         """
         rows and columns start at count 0
         and increase to the right and down
@@ -234,8 +322,19 @@ class GameW(QWidget):
             l.append((10,i))
             l.append((17,i))
         return l
+    
+    def paintEvent(self, e):
+        # Triggered from updating this widget
+        pass
 
-class HighscoresW(QWidget):
+class SettingsW(OwnW):
+    def __init__(self, MWindow):
+        super().__init__(MWindow)
+    
+    def setupWidget(self):
+        pass
+
+class HighscoresW(OwnW):
     def __init__(self, MWindow):
         super().__init__(MWindow)
     

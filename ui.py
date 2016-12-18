@@ -14,6 +14,7 @@ def keyPressed(key, currentWidget):
 class SettingsError(Exception):
     pass
 
+
 class Settings():
     """
     Settings stored in dictionaries:
@@ -103,7 +104,9 @@ class Settings():
         "Pause" : ["Key_Space"],
         "Esc" : ["Key_Escape"]}
         self.otherSettingsDict = {
-        "Resolution" : ["1280x720"]}
+        "Resolution" : ["1280x720"],
+        "WindowMode" : ["Windowed"], # Windowed / Fullscreen
+        "MenuScale" : ["0.75"]} # Size of menu compared to resolution
         self.writeSettingsToFile()
     
     def checkIfKeysUsedByOtherSetting(self, choosenSetting, keySListRef):
@@ -140,17 +143,37 @@ class Settings():
                 if k == keyS:
                     return(i)
         return None
+    
+    
+    def getGeneral(self, setting, defaultValue):
+        try:
+            if setting == "Resolution":
+                [w,h] = self.otherSettingsDict[setting][0].split("x")
+                value = (int(w), int(h))
+            elif setting == "MenuScale":
+                value = float(self.otherSettingsDict[setting][0])
+            elif setting == "WindowMode":
+                value = self.otherSettingsDict[setting][0].strip()
+            else:
+                raise SettingsError("Setting %s does not exist." % setting)
+            return(value)
+        except (ValueError, KeyError):
+            print("Setting %s in wrong format. Try to delete settings.ini-file." % setting)
+            return(defaultValue)
+    
+    def getResolution(self):
+        return self.getGeneral("Resolution", (1270,720))
+    
+    def getMenuScale(self):
+        return self.getGeneral("MenuScale", 0.75)
+    
+    def getWindowMode(self):
+        return self.getGeneral("WindowMode", "Windowed")
+        
 
 
 if __name__ == '__main__':
-    settings = Settings()
-    settings.setDefaultSettings()
-    settings.writeSettingsToFile()
-    
-    print(settings.keySettingsDict)
-    print(settings.otherSettingsDict)
-    
-    print("meaning for Qt.Key_S: ",settings.findKeyMeaning(Qt.Key_S))
-    settings.checkIfKeysUsedByOtherSetting("MoveDown", ["Key_Up", "Key_9", "Key_Q", "Key_S"])
-    
+    s = Settings()
+    s.setDefaultSettings()
+    print(s.getResolution())
     

@@ -7,8 +7,22 @@
     PySide #
 """
 
+from graphics import MainWindow
+from ui import Settings
 
-# Handles window
+import sys
+from PySide.QtGui import QApplication
+
+
+class Heart():
+    def __init__(self):
+        self.MWindow = MainWindow()
+        self.settings = Settings()
+        self.MWindow.setupWindow(self.settings)
+        self.MWindow.show()
+
 
 if __name__ == '__main__':
-    print("Vaka vaka vaka")
+    app = QApplication(sys.argv)
+    heart = Heart()
+    sys.exit(app.exec_())
