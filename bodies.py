@@ -11,6 +11,13 @@ LEFT  = 0
 RIGHT = 1
 UP    = 2
 DOWN  = 3
+# Relative sizes
+PACKMANSIZE   = 0.95
+GHOSTSIZE     = 0.95
+BALLSIZE      = 0.25
+POWERUPSIZE   = 0.7
+FRUITSIZE     = 0.75
+WALLTHICKNESS = 0.2
 
 
 def setupBodyList(BodyClass, quantity, MWindow):
@@ -49,41 +56,41 @@ class Body():
         self.MWindow = MWindow
     
     def setStartCoordinateAndScale(self, coordinateTupple, PToG):
-        self.xStart = coordinateTupple[0]
-        self.yStart = coordinateTupple[1]
+        xRaw = coordinateTupple[0]
+        yRaw = coordinateTupple[1]
         self.PToG = PToG
+        self.setSize()
+        """
+        When drawing a body, the coordinate will
+        represent the upper-left-corner. Therefore
+        the coordinate will need to corrected.
+        """
+        self.xStart = xRaw - self.size/2
+        self.yStart = yRaw - self.size/2
         self.moveToStart()
-        self.setScale()
+        self.setThings()
         self.setHitbox()
     
-    def setScale(self):
-        # implemented in child
-        # hitbox and other parameters set here
-        self.r = 2*self.PToG
-    
-    def setHitbox(self):
-        # The hitbox is a rectangle
-        self.HBLeft  = self.x - self.r
-        self.HBRight = self.x + self.r
-        self.HBUp    = self.y - self.r
-        self.HBDown  = self.y + self.r
+    def setSize(self):
+        self.size = self.PToG
     
     def moveToStart(self):
         self.x = self.xStart
         self.y = self.yStart
     
-    def draw(self, painter):
+    def setThings(self):
         pass
-    """
-    def eat(self, food):
-        # character closes and opens mouth and sound is played
-        if food == "ball":
-            PlaySound("eatBall")
-        elif food == "powerupBall":
-            PlaySound("eatPowerupBall")
-        elif food == "fruit":
-            PlaySound("eatFruit")
-    """
+    
+    def setHitbox(self):
+        # The hitbox is a rectangle
+        self.HBLeft  = self.x
+        self.HBRight = self.x + self.size
+        self.HBUp    = self.y
+        self.HBDown  = self.y + self.size
+        # self.HBList  = [self.HBLeft, self.HBRight, self.HBUp, self.HBDown]
+    
+    def draw(self, painter):
+        print("Not drawn: ",self)
 
 class Pacman(Body):
     def __init__(self, MWindow):
@@ -92,24 +99,44 @@ class Pacman(Body):
         self.firstAngle = 50*16
         self.spanAngle = 260*16
     
-    def setScale(self):
-        self.r = self.PToG * 0.95
+    def setSize(self):
+        self.size = self.PToG * PACKMANSIZE
     
-    def changeDirectionTo(self, direction):
+    def changeDirection(self, direction):
         self.direction = direction
     
     def draw(self, painter):
         painter.setBrush(Qt.yellow)
-        print(self.x, self.y, self.r, self.r, self.firstAngle, self.spanAngle)
-        painter.drawPie(self.x, self.y, self.r, self.r, self.firstAngle, self.spanAngle)
+        painter.drawPie(self.x, self.y, self.size, self.size, self.firstAngle, self.spanAngle)
 
 class Ghost(Body):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+    
+    def setSize(self):
+        self.size = self.PToG * GHOSTSIZE
+    
+    def changeDirection(self, direction):
+        self.direction = direction
+    
+    def draw(self, painter):
+        painter.setBrush(Qt.blue)
+        painter.drawRect(self.x, self.y, self.size, self.size)
 
 class Wall(Body):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+    
+    def setThings(self):
+        # ATM just vertical line
+        self.startPoint = QPoint(self.x + self.size/2, self.y)
+        self.endPoint   = QPoint(self.x + self.size/2, self.y + self.size)
+        self.wallThickness = self.PToG * WALLTHICKNESS
+    
+    def draw(self, painter):
+        pen = QPen(Qt.blue, self.wallThickness, Qt.SolidLine)
+        painter.setPen(pen)
+        painter.drawLine(self.startPoint, self.endPoint)
 
 class GhostWall(Wall):
     def __init__(self, MWindow):
@@ -118,22 +145,22 @@ class GhostWall(Wall):
 class Ball(Body):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+        self.colour = Qt.yellow
     
-    def setScale(self):
-        self.r = self.PToG * 0.3
+    def setSize(self):
+        self.size = self.PToG * BALLSIZE
     
     def draw(self, painter):
-        painter.setBrush(Qt.yellow)
-        """
-        painter.setBrush(QBrush())
-        pen = QPen(Qt.yellow, 1, Qt.SolidLine)
-        painter.setPen(pen)
-        """
-        painter.drawEllipse(self.x, self.y, self.r, self.r)
+        painter.setBrush(self.colour)
+        painter.drawEllipse(self.x, self.y, self.size, self.size)
 
 class Powerup(Ball):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+        self.colour = Qt.magenta
+    
+    def setSize(self):
+        self.size = self.PToG * POWERUPSIZE
 
 class Fruit(Ball):
     """
@@ -149,3 +176,7 @@ class Fruit(Ball):
     """
     def __init__(self, MWindow):
         super().__init__(MWindow)
+        self.colour = Qt.red
+    
+    def setSize(self):
+        self.size = self.PToG * FRUITSIZE

@@ -242,18 +242,16 @@ class GameW(OwnW):
         for i in range(2,27):
             l.append((6,i))
             l.append((21,i))
-        # y 1
-        for i in range(1,13):
-            l.append((i,1))
-        for i in range(15,27):
-            l.append((i,1))
-        # y 5 & 29
+        
         for i in range(1,27):
-            if i!=6 and i!=21:
+            # y 1
+            if i not in [13,14]:
                 l.append((i,1))
+            # y 5 & 29
+            if i not in [6,21]:
+                l.append((i,5))
             l.append((i,29))
-        # y 8 & 26 & 20 & 23
-        for i in range(1,27):
+            # y 8 & 26 & 20 & 23
             if i not in [6,13,14,21]:
                 l.append((i,20))
                 if i not in [1,4,5,22,23,26]:
