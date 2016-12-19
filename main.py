@@ -19,7 +19,35 @@ class Heart():
         self.MWindow = MainWindow()
         self.settings = Settings()
         self.MWindow.setupWindow(self.settings)
+        
+        self.testing()
+        
         self.MWindow.show()
+    
+    def testing(self):
+        self.MWindow.toGameW()
+        """
+        g = self.MWindow.GameW
+        print('\n', g.BODYLIST)
+        print(g.ghostList)
+        print(g.BODYLIST[0].x, g.BODYLIST[0].y)
+        print(g.pacmanPCor, '\n')
+        for i in g.ghostList:
+            print(i.x, i.y)
+        """
+        
+        """
+        print(
+        len(g.pacmanPCor),
+        len(g.fruitPCor),
+        len(g.ghostPCors),
+        len(g.wallEdgePCors),
+        len(g.ghostWallEdgePCors),
+        len(g.ballPCors),
+        len(g.powerupPCors)
+        )
+        """
+        #sys.exit()
 
 
 if __name__ == '__main__':

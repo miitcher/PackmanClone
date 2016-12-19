@@ -13,6 +13,7 @@
 """
 
 from ui import Settings
+from bodies import *
 
 import sys
 from PySide.QtCore import *
@@ -30,6 +31,7 @@ class MainWindow(QMainWindow):
         self.settings = settings
         self.getSettings()
         self.resize(round(self.width*self.menuScale), round(self.height*self.menuScale))
+        # set MainWindow to center
         self.toMenuW()
     
     def getSettings(self):
@@ -44,9 +46,16 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.menuW)
     
     def toGameW(self):
-        self.setCursor(Qt.BlankCursor)
+        #self.setCursor(Qt.BlankCursor)
         self.GameW = GameW(self)
         self.GameW.setupWidget()
+        if self.windowMode == "Fullscreen":
+            self.resize(self.width, self.height)
+            # should be real fullscreen
+            # self.MWindow.windowMode
+        elif self.windowMode == "Windowed":
+            self.GameW.setMWSize()
+        self.GameW.update()
         self.setCentralWidget(self.GameW)
     
     def toSettingsW(self):
@@ -110,38 +119,47 @@ class GameW(OwnW):
         and the horisontal (width) measure is x,
         and the vertical (height) is y as: "(x,y)".
         """
-        print("setting up game")
         self.generateGCors()
         self.makePCorsFromGCors()
-        print("things counted")
-        print(self.pacmanGCor)
-        print(self.PToG)
-        print(self.pacmanPCor)
-        self.initItems()
-        # items to draw
-        self.food = [] # balls, powerups, fruit
-        self.characters = [] # ghosts, character
-        self.walls = [] # regular-, ghost-walls
+        self.setupBodies()
+        self.setBodyCoordinates()
+        print("GameW set")
+    
+    def setMWSize(self):
+        self.MWindow.resize(self.gameAreaSize[0], self.gameAreaSize[1])
+    
+    def paintEvent(self, e):
+        painter = QPainter()
+        painter.begin(self)
         
-        #self.MWindow.windowMode
+        for b in self.BODYLIST:
+            b.draw(painter)
+        
+        painter.end()
     
     def generateGCors(self):
         self.pacmanGCor = [(13.5,23)]
-        self.ballGCors = self.generateBallGCoordinateList()
-        self.powerupGCors = [(1,3), (26,3), (1,23), (26,23)]
+        self.fruitGCor = [(13.5,17)]
         self.ghostGCors = [(13.5,11),(11.5,14),(13.5,14),(15.5,14)]
         self.wallEdgeGCors = self.generateWallEdgeGCoordinateList()
         self.ghostWallEdgeGCors = self.generateGhostWallEdgeGCoordinateList()
+        self.ballGCors = self.generateBallGCoordinateList()
+        self.powerupGCors = [(1,3), (26,3), (1,23), (26,23)]
     
     def makePCorsFromGCors(self):
         """
         The GCor game-areas coordinate ranges are:
             x: [0, 27], y: [0, 30]
-        We give extra space, in GCor units, to the
-        horisontal 2 and the vertical 5.
-        Now our GCor side lenghts are:5
+        We give extra space, in GCor units:
+            right/left: 1, up: 3, down: 2
+        Extra spaces combined is:
+            horisontal: 2, vertical: 5
+        Now our GCor side lenghts are:
             x: 29, y: 35
+        The extra space up and left need buffers.
         """
+        self.xBufferGCor = 1
+        self.yBufferGCor = 3
         xLenGCor = 29
         yLenGCor = 35
         xRatio = self.MWindow.width  / xLenGCor
@@ -155,21 +173,60 @@ class GameW(OwnW):
             # width (x) limits
             self.PToG = xRatio
         
-        self.pacmanPCor         = self.multiplyTuppleListWithPToG(self.pacmanGCor)
-        self.ballPCors          = self.multiplyTuppleListWithPToG(self.ballGCors)
-        self.powerupPCors       = self.multiplyTuppleListWithPToG(self.powerupGCors)
-        self.ghostPCors         = self.multiplyTuppleListWithPToG(self.ghostGCors)
-        self.wallEdgePCors      = self.multiplyTuppleListWithPToG(self.wallEdgeGCors)
-        self.ghostWallEdgePCors = self.multiplyTuppleListWithPToG(self.ghostWallEdgeGCors)
+        self.gameAreaSize = (self.PToG * xLenGCor, self.PToG * yLenGCor)
+        
+        self.pacmanPCor         = self.modifyTuppleList(self.pacmanGCor)
+        self.fruitPCor          = self.modifyTuppleList(self.fruitGCor)
+        self.ghostPCors         = self.modifyTuppleList(self.ghostGCors)
+        self.wallEdgePCors      = self.modifyTuppleList(self.wallEdgeGCors)
+        self.ghostWallEdgePCors = self.modifyTuppleList(self.ghostWallEdgeGCors)
+        self.ballPCors          = self.modifyTuppleList(self.ballGCors)
+        self.powerupPCors       = self.modifyTuppleList(self.powerupGCors)
     
-    def multiplyTuppleListWithPToG(self, list):
+    def modifyTuppleList(self, list):
         newList = []
         for tupple in list:
-            newList.append((tupple[0]*self.PToG, tupple[1]*self.PToG))
+            newList.append(( self.PToG * (self.xBufferGCor + tupple[0]),
+                             self.PToG * (self.yBufferGCor + tupple[1]) ))
         return(newList)
     
-    def initItems(self):
-        pass
+    def setupBodies(self):
+        self.pacmanList = [Pacman(self)]
+        self.fruitList = [Fruit(self)]
+        self.ghostList = setupGhostList(self)
+        self.wallList = setupWallList(self)
+        self.ghostWallList = setupGhostWallList(self)
+        self.ballList = setupBallList(self)
+        self.powerupList = setupPowerupList(self)
+        self.addBodiesToBODYLIST() # self.BODYLIST
+    
+    def addBodiesToBODYLIST(self):
+        self.BODYLIST = []
+        self.addListToBodyList(self.pacmanList)
+        self.addListToBodyList(self.fruitList)
+        self.addListToBodyList(self.ghostList)
+        self.addListToBodyList(self.wallList)
+        self.addListToBodyList(self.ghostWallList)
+        self.addListToBodyList(self.ballList)
+        self.addListToBodyList(self.powerupList)
+    
+    def addListToBodyList(self, sourceList):
+        for i in sourceList:
+            self.BODYLIST.append(i)
+    
+    def setBodyCoordinates(self):
+        self.setCoordinatesForAList(self.pacmanList, self.pacmanPCor)
+        self.setCoordinatesForAList(self.fruitList, self.fruitPCor)
+        self.setCoordinatesForAList(self.ghostList, self.ghostPCors)
+        self.setCoordinatesForAList(self.wallList, self.wallEdgePCors)
+        self.setCoordinatesForAList(self.ghostWallList, self.ghostWallEdgePCors)
+        self.setCoordinatesForAList(self.ballList, self.ballPCors)
+        self.setCoordinatesForAList(self.powerupList, self.powerupPCors)
+    
+    def setCoordinatesForAList(self, bodyList, corList):
+        for i in range(len(corList)):
+            bodyList[i].setStartCoordinateAndScale(corList[i], self.PToG)
+            bodyList[i].moveToStart()
     
     def generateBallGCoordinateList(self):
         """
@@ -322,10 +379,6 @@ class GameW(OwnW):
             l.append((10,i))
             l.append((17,i))
         return l
-    
-    def paintEvent(self, e):
-        # Triggered from updating this widget
-        pass
 
 class SettingsW(OwnW):
     def __init__(self, MWindow):
