@@ -41,9 +41,14 @@ class TestSettingsMethods(unittest.TestCase):
         s.writeSettingsToFile()
         with open("settings.ini", "r") as f:
             strList = f.readlines()
-        expectedStrList = ['# SETTINGS\n', 'KEYS\n', 'MoveDown = Down, S\n', 'MoveRight = Right, D\n', 'Pause = 9, C\n', 'Esc = Escape\n', 'MoveUp = Up, W\n', 'MoveLeft = Left, A\n', 'OTHER\n', 'Resolution = 1280x720']
-        for row in expectedStrList:
-            self.assertTrue(row in strList)
+        expectedStrList = ['# SETTINGS\n', 'KEYS\n', 'MoveDown = Down, S\n', 'MoveRight = Right, D\n', 'Pause = 9, C\n', 'Esc = Escape\n', 'MoveUp = Up, W\n', 'MoveLeft = Left, A\n', 'OTHER\n', 'Resolution = 1280x720\n', 'WindowMode = Windowed\n', 'MenuScale = 0.75\n']
+        self.assertEqual(strList[0], expectedStrList[0])
+        self.assertEqual(strList[1], expectedStrList[1])
+        self.assertEqual(strList[8], expectedStrList[8])
+        for row in strList:
+            if row[-1] != '\n':
+                row += '\n'
+            self.assertTrue(row in expectedStrList)
     
     def test_setDefaultSettings(self):
         s = Settings()
@@ -51,7 +56,7 @@ class TestSettingsMethods(unittest.TestCase):
         s.otherSettingsDict = {"Resolution":["200x400"]}
         s.setDefaultSettings()
         defaultKeySettingsDict = {'MoveUp': ['Key_Up', 'Key_W'], 'Esc': ['Key_Escape'], 'Pause': ['Key_Space'], 'MoveDown': ['Key_Down', 'Key_S'], 'MoveRight': ['Key_Right', 'Key_D'], 'MoveLeft': ['Key_Left', 'Key_A']}
-        defaultOtherSettingsDict = {'Resolution': ['1280x720']}
+        defaultOtherSettingsDict = {'MenuScale': ['0.75'], 'Resolution': ['1280x720'], 'WindowMode': ['Windowed']}
         self.assertEqual(s.keySettingsDict, defaultKeySettingsDict)
         self.assertEqual(s.otherSettingsDict, defaultOtherSettingsDict)
         # testing empty setting dictionaries
@@ -80,7 +85,7 @@ class TestSettingsMethods(unittest.TestCase):
         
         s.unassignKeysForSettings({"MoveUp":["Key_W"], "MoveDown":['Key_Down', 'Key_S'], "Esc":["Key_Escape"]})
         expectedKeySettingsDict = {'MoveUp': ['Key_Up'], 'Pause': ['Key_Space'], 'MoveRight': ['Key_Right', 'Key_D'], 'MoveLeft': ['Key_Left', 'Key_A'], 'MoveDown': [], 'Esc': []}
-        expectedOtherSettingsDict = {'Resolution': ['1280x720']}
+        expectedOtherSettingsDict = {'MenuScale': ['0.75'], 'Resolution': ['1280x720'], 'WindowMode': ['Windowed']}
         self.assertEqual(s.keySettingsDict, expectedKeySettingsDict)
         self.assertEqual(s.otherSettingsDict, expectedOtherSettingsDict)
     
