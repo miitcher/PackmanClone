@@ -13,12 +13,11 @@ class Physics():
     def __init__(self):
         pass
     
-    def setupPhysics(self, fps, PToG):
+    def setupPhysics(self, fps):
         self.dt = 1 / fps # smallest time in physics
-        self.PToG = PToG
     
     def move(self, x, y, direction, speed):
-        change = self.PToG * self.dt * speed
+        change = self.dt * speed
         if direction == LEFT:
             return(x - change, y)
         elif direction == RIGHT:

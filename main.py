@@ -25,8 +25,8 @@ class MainWindow(QMainWindow):
         self.settings = settings
         self.physics = physics
         self.getSettings()
-        self.calculatePToG()
-        self.physics.setupPhysics(self.fps, self.PToG)
+        self.calculateCorScale()
+        self.physics.setupPhysics(self.fps)
         
         self.resize(round(self.width*self.menuScale), round(self.height*self.menuScale))
         # set MainWindow to center
@@ -38,35 +38,36 @@ class MainWindow(QMainWindow):
         self.menuScale = self.settings.getMenuScale()
         self.windowMode = self.settings.getWindowMode()
     
-    def calculatePToG(self):
+    def calculateCorScale(self):
         """
-        PToG is the ratio between the pixel- and 
-        general coordinates (PToG = PCor / PCor).
+        "CorScale" is the ratio between the pixel- and 
+        general coordinates (CorScale = PixelCor / GeneralCor).
         
-        The GCor game-areas coordinate ranges are:
+        The GeneralCor game-areas coordinate ranges are:
             x: [0, 27], y: [0, 30]
-        We give extra space, in GCor units:
+        We give extra space, in GeneralCor units:
             right/left: 1, up: 3, down: 2
         Extra spaces combined is:
             horisontal: 2, vertical: 5
-        Now our GCor side lenghts are:
+        Now our GeneralCor side lenghts are:
             x: 29, y: 35
         The extra space up and left need buffers.
         """
-        xLenGCor = 29
-        yLenGCor = 35
+        self.CorOffset = (1,3)
+        xLenGCor = 29   # 27 + 2
+        yLenGCor = 35   # 30 + 5
         xRatio = self.width  / xLenGCor
         yRatio = self.height / yLenGCor
         # We determine the conversion between GCor
         # and PCor with the limiting length.
         if xRatio > yRatio:
             # height (y) limits
-            self.PToG = yRatio
+            self.CorScale = yRatio
         else:
             # width (x) limits
-            self.PToG = xRatio
+            self.CorScale = xRatio
         
-        self.gameAreaSize = (self.PToG * xLenGCor, self.PToG * yLenGCor)
+        self.gameAreaSize = (self.CorScale * xLenGCor, self.CorScale * yLenGCor)
     
     def keyPressEvent(self, e):
         if e.isAutoRepeat():

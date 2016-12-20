@@ -67,11 +67,9 @@ class Body():
     def __init__(self, MWindow):
         self.MWindow = MWindow
     
-    def setStartCoordinateAndScale(self, coordinateTupple, PToG):
+    def setStartCoordinateAndScale(self, coordinateTupple):
         xRaw = coordinateTupple[0]
         yRaw = coordinateTupple[1]
-        self.PToG = PToG
-        self.setSize()
         """
         When drawing a body, the coordinate will
         represent the upper-left-corner. Therefore
@@ -82,9 +80,6 @@ class Body():
         self.moveToStart()
         self.setThings()
         self.setHitbox()
-    
-    def setSize(self):
-        self.size = self.PToG
     
     def moveToStart(self):
         self.x = self.xStart
@@ -110,6 +105,7 @@ class Body():
 class Pacman(Body):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+        self.size = PACMANSIZE
         self.colour = PACMANCOLOUR
         self.direction = RIGHT
         self.speed = PACMANSPEED
@@ -120,9 +116,6 @@ class Pacman(Body):
         self.extraLives = 3
         self.moving = False
         self.nextDirection = None
-    
-    def setSize(self):
-        self.size = self.PToG * PACMANSIZE
     
     def setThings(self):
         # Map keys
@@ -163,13 +156,11 @@ class Pacman(Body):
 
 class Ghost(Body):
     def __init__(self, MWindow, ghostIndex):
+        self.size = GHOSTSIZE
         super().__init__(MWindow)
         self.ghostIndex = ghostIndex
         self.colour = Qt.green
         self.speed = GHOSTSPEED
-    
-    def setSize(self):
-        self.size = self.PToG * GHOSTSIZE
     
     def setThings(self):
         try:
@@ -188,10 +179,11 @@ class Ghost(Body):
 class Wall(Body):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+        self.size = 1
+        self.wallThickness = WALLTHICKNESS
         self.colour = WALLCOLOUR
     
     def setThings(self):
-        self.wallThickness = self.PToG * WALLTHICKNESS
         # vertical line
         self.startPoint = QPoint(self.x + self.size/2, self.y)
         self.endPoint   = QPoint(self.x + self.size/2, self.y + self.size)
@@ -213,10 +205,8 @@ class GhostWall(Wall):
 class Ball(Body):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+        self.size = BALLSIZE
         self.colour = BALLCOLOUR
-    
-    def setSize(self):
-        self.size = self.PToG * BALLSIZE
     
     def draw(self, painter):
         Body.draw(self, painter)
@@ -226,10 +216,8 @@ class Ball(Body):
 class Powerup(Ball):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+        self.size = POWERUPSIZE
         self.colour = POWERUPCOLOUR
-    
-    def setSize(self):
-        self.size = self.PToG * POWERUPSIZE
 
 class Fruit(Ball):
     """
@@ -245,7 +233,5 @@ class Fruit(Ball):
     """
     def __init__(self, MWindow):
         super().__init__(MWindow)
+        self.size = FRUITSIZE
         self.colour = FRUITCOLOUR
-    
-    def setSize(self):
-        self.size = self.PToG * FRUITSIZE
