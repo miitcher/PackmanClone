@@ -28,7 +28,7 @@ BALLCOLOUR      = QColor(255,204,153)
 POWERUPCOLOUR   = BALLCOLOUR
 FRUITCOLOUR     = Qt.red
 # Speeds [GCor/s]
-PACMANSPEED     = 1
+PACMANSPEED     = 2
 GHOSTSPEED      = PACMANSPEED
 SLOWGHOSTSPEED  = GHOSTSPEED/2
 
@@ -102,7 +102,6 @@ class Body():
         self.HBRight = self.x + self.size
         self.HBUp    = self.y
         self.HBDown  = self.y + self.size
-        # self.HBList  = [self.HBLeft, self.HBRight, self.HBUp, self.HBDown]
     
     def draw(self, painter):
         painter.setBrush(QBrush())
@@ -116,22 +115,51 @@ class Pacman(Body):
         self.speed = PACMANSPEED
         self.firstAngle = 50*16
         self.spanAngle = 260*16
+        
+        self.alive = True
+        self.extraLives = 3
+        self.moving = False
+        self.nextDirection = None
     
     def setSize(self):
         self.size = self.PToG * PACMANSIZE
     
-    def changeDirection(self, direction):
-        self.direction = direction
+    def setThings(self):
+        # Map keys
+        keySettingsDict = self.MWindow.settings.keySettingsDict
+        self.MoveLeft = keySettingsDict["MoveLeft"]
+        self.MoveRight = keySettingsDict["MoveRight"]
+        self.MoveUp = keySettingsDict["MoveUp"]
+        self.MoveDown = keySettingsDict["MoveDown"]
     
     def draw(self, painter):
         Body.draw(self, painter)
         painter.setBrush(self.colour)
         painter.drawPie(self.x, self.y, self.size, self.size, self.firstAngle, self.spanAngle)
     
-    def move(self, direction):
-        self.direction = direction
+    def processPressedKey(self):
+        pKey = self.MWindow.keyHandler.pressedKey
+        if self.alive and pKey:
+            print(pKey,"pressed")
+            if pKey in self.MoveLeft:
+                self.moving = True
+                self.direction = LEFT
+            elif pKey in self.MoveRight:
+                self.moving = True
+                self.direction = RIGHT
+            elif pKey in self.MoveUp:
+                self.moving = True
+                self.direction = UP
+            elif pKey in self.MoveDown:
+                self.moving = True
+                self.direction = DOWN
+            self.MWindow.keyHandler.pressedKey = None
+        if self.moving:
+            self.move()
+    
+    def move(self):
         [self.x, self.y] = self.physicsMove()
-        
+        self.setHitbox()
 
 class Ghost(Body):
     def __init__(self, MWindow, ghostIndex):

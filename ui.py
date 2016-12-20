@@ -18,29 +18,11 @@ class SettingsError(Exception):
 class KeyHandler():
     def __init__(self, MWindow):
         self.MWindow = MWindow
-        self.currentWidget = "MenuW"
-        self.pressedKeys = set() # format in strings: "Key_G"
-        """
-        if str(currentWidget) == "GameW":
-            print("Widget is GameW")
-        
-        if keyE == e.key():
-            print("Match")
-        else:
-            print("Not the same")
-        """
+        self.pressedKey = None # format in strings: "Key_G"
     
     def keyPressed(self, currentWidget, e):
         self.currentWidget = str(currentWidget)
-        self.pressedKeys.add(eventKeyToString(e))
-        print("press",self.pressedKeys)
-    
-    def keyReleased(self, e):
-        if e.isAutoRepeat():
-            e.ignore()
-            return
-        self.pressedKeys.remove(eventKeyToString(e))
-        print("release",self.pressedKeys)
+        self.pressedKey = eventKeyToString(e)
 
 class Settings():
     """
@@ -202,11 +184,3 @@ class Settings():
     
     def getWindowMode(self):
         return self.getGeneral("WindowMode", "Windowed")
-        
-
-
-if __name__ == '__main__':
-    s = Settings()
-    s.setDefaultSettings()
-    print(s.getResolution())
-    

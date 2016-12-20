@@ -18,14 +18,15 @@ from PySide.QtGui import *
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.keyHandler = KeyHandler(self)
         self.setWindowTitle("Packman Clone")
     
     def setupWindow(self, settings, physics):
+        self.keyHandler = KeyHandler(self)
         self.settings = settings
         self.physics = physics
         self.getSettings()
-        self.physics.setRefresh(self.fps)
+        self.calculatePToG()
+        self.physics.setupPhysics(self.fps, self.PToG)
         
         self.resize(round(self.width*self.menuScale), round(self.height*self.menuScale))
         # set MainWindow to center
@@ -37,14 +38,41 @@ class MainWindow(QMainWindow):
         self.menuScale = self.settings.getMenuScale()
         self.windowMode = self.settings.getWindowMode()
     
+    def calculatePToG(self):
+        """
+        PToG is the ratio between the pixel- and 
+        general coordinates (PToG = PCor / PCor).
+        
+        The GCor game-areas coordinate ranges are:
+            x: [0, 27], y: [0, 30]
+        We give extra space, in GCor units:
+            right/left: 1, up: 3, down: 2
+        Extra spaces combined is:
+            horisontal: 2, vertical: 5
+        Now our GCor side lenghts are:
+            x: 29, y: 35
+        The extra space up and left need buffers.
+        """
+        xLenGCor = 29
+        yLenGCor = 35
+        xRatio = self.width  / xLenGCor
+        yRatio = self.height / yLenGCor
+        # We determine the conversion between GCor
+        # and PCor with the limiting length.
+        if xRatio > yRatio:
+            # height (y) limits
+            self.PToG = yRatio
+        else:
+            # width (x) limits
+            self.PToG = xRatio
+        
+        self.gameAreaSize = (self.PToG * xLenGCor, self.PToG * yLenGCor)
+    
     def keyPressEvent(self, e):
         if e.isAutoRepeat():
             e.ignore()
             return
         self.keyHandler.keyPressed(self.centralWidget(), e)
-    
-    def keyReleaseEvent(self, e):
-        self.keyHandler.keyReleased(e)
     
     def toMenuW(self):
         self.setCursor(Qt.ArrowCursor)
@@ -61,7 +89,7 @@ class MainWindow(QMainWindow):
             # should be real fullscreen
             # self.MWindow.windowMode
         elif self.windowMode == "Windowed":
-            self.GameW.setMWSize()
+            self.resize(self.gameAreaSize[0], self.gameAreaSize[1])
         self.setCentralWidget(self.GameW)
         self.GameW.startGame()
     

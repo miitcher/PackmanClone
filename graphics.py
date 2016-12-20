@@ -1,6 +1,7 @@
 """
     Handles graphics.
     https://wiki.qt.io/PySideDocumentation
+    https://deptinfo-ensip.univ-poitiers.fr/ENS/pyside-docs/index.html
     
     Design:
         black background
@@ -60,6 +61,7 @@ class MenuW(OwnW):
 class GameW(OwnW):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+        self.PToG = MWindow.PToG
     
     def startGame(self):
         self.timer = QTimer()
@@ -67,6 +69,7 @@ class GameW(OwnW):
         self.timer.start(1/self.MWindow.fps)
     
     def timerEvent(self):
+        self.pacmanList[0].processPressedKey()
         self.update()
     
     def __str__(self):
@@ -86,12 +89,10 @@ class GameW(OwnW):
         self.setBodyCoordinates()
         print("GameW set")
     
-    def setMWSize(self):
-        self.MWindow.resize(self.gameAreaSize[0], self.gameAreaSize[1])
-    
     def paintEvent(self, e):
         painter = QPainter()
         painter.begin(self)
+        #painter.scale(self.PToG, self.PToG)
         
         self.drawBodyList(self.fruitList, painter)
         self.drawBodyList(self.powerupList, painter)
@@ -121,34 +122,6 @@ class GameW(OwnW):
         """
     
     def makePCorsFromGCors(self):
-        """
-        The GCor game-areas coordinate ranges are:
-            x: [0, 27], y: [0, 30]
-        We give extra space, in GCor units:
-            right/left: 1, up: 3, down: 2
-        Extra spaces combined is:
-            horisontal: 2, vertical: 5
-        Now our GCor side lenghts are:
-            x: 29, y: 35
-        The extra space up and left need buffers.
-        """
-        self.xBufferGCor = 1
-        self.yBufferGCor = 3
-        xLenGCor = 29
-        yLenGCor = 35
-        xRatio = self.MWindow.width  / xLenGCor
-        yRatio = self.MWindow.height / yLenGCor
-        # We determine the conversion between GCor
-        # and PCor with the limiting length.
-        if xRatio > yRatio:
-            # height (y) limits
-            self.PToG = yRatio
-        else:
-            # width (x) limits
-            self.PToG = xRatio
-        
-        self.gameAreaSize = (self.PToG * xLenGCor, self.PToG * yLenGCor)
-        
         self.pacmanPCor         = self.modifyTuppleList(self.pacmanGCor)
         self.fruitPCor          = self.modifyTuppleList(self.fruitGCor)
         self.ghostPCors         = self.modifyTuppleList(self.ghostGCors)
@@ -160,12 +133,13 @@ class GameW(OwnW):
     def modifyTuppleList(self, list):
         newList = []
         for tupple in list:
-            newList.append(( self.PToG * (self.xBufferGCor + tupple[0]),
-                             self.PToG * (self.yBufferGCor + tupple[1]) ))
+            # The buffers are; x:1, y:3
+            newList.append(( self.PToG * (1 + tupple[0]),
+                             self.PToG * (3 + tupple[1]) ))
         return(newList)
     
     def setupBodies(self):
-        self.pacmanList = [Pacman(self)]
+        self.pacmanList = [Pacman(self.MWindow)]
         self.fruitList = [Fruit(self)]
         self.ghostList = setupGhostList(self, len(self.ghostPCors))
         self.wallList = setupWallList(self, len(self.wallEdgePCors))
