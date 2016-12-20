@@ -9,6 +9,7 @@
 
 from graphics import *
 from ui import Settings, KeyHandler
+from physics import Physics
 
 import sys
 from PySide.QtGui import *
@@ -20,15 +21,19 @@ class MainWindow(QMainWindow):
         self.keyHandler = KeyHandler(self)
         self.setWindowTitle("Packman Clone")
     
-    def setupWindow(self, settings):
+    def setupWindow(self, settings, physics):
         self.settings = settings
+        self.physics = physics
         self.getSettings()
+        self.physics.setRefresh(self.fps)
+        
         self.resize(round(self.width*self.menuScale), round(self.height*self.menuScale))
         # set MainWindow to center
         self.toMenuW()
     
     def getSettings(self):
         (self.width, self.height) = self.settings.getResolution()
+        self.fps = self.settings.getFPS()
         self.menuScale = self.settings.getMenuScale()
         self.windowMode = self.settings.getWindowMode()
     
@@ -57,8 +62,8 @@ class MainWindow(QMainWindow):
             # self.MWindow.windowMode
         elif self.windowMode == "Windowed":
             self.GameW.setMWSize()
-        self.GameW.update()
         self.setCentralWidget(self.GameW)
+        self.GameW.startGame()
     
     def toSettingsW(self):
         self.setCursor(Qt.ArrowCursor)
@@ -77,7 +82,8 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     mainWindow = MainWindow()
     settings = Settings()
-    mainWindow.setupWindow(settings)
+    physics = Physics()
+    mainWindow.setupWindow(settings, physics)
     # TESTING
     mainWindow.toGameW()
     #sys.exit()

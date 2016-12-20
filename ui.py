@@ -132,6 +132,7 @@ class Settings():
         "Esc" : ["Key_Escape"]}
         self.otherSettingsDict = {
         "Resolution" : ["1280x720"],
+        "FPS" : ["60"],
         "WindowMode" : ["Windowed"], # Windowed / Fullscreen
         "MenuScale" : ["0.75"]} # Size of menu compared to resolution
         self.writeSettingsToFile()
@@ -177,6 +178,8 @@ class Settings():
             if setting == "Resolution":
                 [w,h] = self.otherSettingsDict[setting][0].split("x")
                 value = (int(w), int(h))
+            elif setting == "FPS":
+                value = int(self.otherSettingsDict[setting][0])
             elif setting == "MenuScale":
                 value = float(self.otherSettingsDict[setting][0])
             elif setting == "WindowMode":
@@ -190,6 +193,9 @@ class Settings():
     
     def getResolution(self):
         return self.getGeneral("Resolution", (1270,720))
+    
+    def getFPS(self):
+        return self.getGeneral("FPS", 60)
     
     def getMenuScale(self):
         return self.getGeneral("MenuScale", 0.75)

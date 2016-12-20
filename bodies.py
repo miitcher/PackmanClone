@@ -7,11 +7,12 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 
+# Directions
 LEFT  = 0
 RIGHT = 1
 UP    = 2
 DOWN  = 3
-# Relative sizes
+# Relative sizes [GCor]
 WALLTHICKNESS   = 0.1
 PACMANSIZE      = 2 - 4*WALLTHICKNESS
 GHOSTSIZE       = PACMANSIZE
@@ -26,7 +27,10 @@ GHOSTCOLOURLIST = [Qt.red, Qt.cyan, QColor(255,192,203), QColor(255,165,0)]
 BALLCOLOUR      = QColor(255,204,153)
 POWERUPCOLOUR   = BALLCOLOUR
 FRUITCOLOUR     = Qt.red
-
+# Speeds [GCor/s]
+PACMANSPEED     = 1
+GHOSTSPEED      = PACMANSPEED
+SLOWGHOSTSPEED  = GHOSTSPEED/2
 
 def setupBodyList(BodyClass, quantity, MWindow):
     list = []
@@ -86,6 +90,9 @@ class Body():
         self.x = self.xStart
         self.y = self.yStart
     
+    def physicsMove(self):
+        return self.MWindow.physics.move(self.x, self.y, self.direction, self.speed)
+    
     def setThings(self):
         pass
     
@@ -106,6 +113,7 @@ class Pacman(Body):
         super().__init__(MWindow)
         self.colour = PACMANCOLOUR
         self.direction = RIGHT
+        self.speed = PACMANSPEED
         self.firstAngle = 50*16
         self.spanAngle = 260*16
     
@@ -119,12 +127,18 @@ class Pacman(Body):
         Body.draw(self, painter)
         painter.setBrush(self.colour)
         painter.drawPie(self.x, self.y, self.size, self.size, self.firstAngle, self.spanAngle)
+    
+    def move(self, direction):
+        self.direction = direction
+        [self.x, self.y] = self.physicsMove()
+        
 
 class Ghost(Body):
     def __init__(self, MWindow, ghostIndex):
         super().__init__(MWindow)
         self.ghostIndex = ghostIndex
         self.colour = Qt.green
+        self.speed = GHOSTSPEED
     
     def setSize(self):
         self.size = self.PToG * GHOSTSIZE

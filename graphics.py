@@ -61,6 +61,14 @@ class GameW(OwnW):
     def __init__(self, MWindow):
         super().__init__(MWindow)
     
+    def startGame(self):
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.timerEvent)
+        self.timer.start(1/self.MWindow.fps)
+    
+    def timerEvent(self):
+        self.update()
+    
     def __str__(self):
         return "GameW"
     
