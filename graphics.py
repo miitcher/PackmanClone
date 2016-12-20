@@ -65,7 +65,7 @@ class GameW(OwnW):
     def startGame(self):
         self.timer = QTimer()
         self.timer.timeout.connect(self.timerEvent)
-        self.timer.start(1/self.MWindow.fps)
+        self.timer.start(1000)#/self.MWindow.fps) # [ms]
     
     def timerEvent(self):
         self.pacmanList[0].processPressedKey()
@@ -82,11 +82,11 @@ class GameW(OwnW):
         and the horisontal (width) measure is x,
         and the vertical (height) is y as: "(x,y)".
         """
-        #offset = (1,3) # (x,y)
         self.generateCoordinates()
         self.setOffsetToCoordinates(self.MWindow.CorOffset)
         self.createBodies()
-        self.setBodyCoordinates()
+        print("pacmanCor\t", self.pacmanCor,
+              "\npacmanList\t", self.pacmanList[0])
         print("GameW set")
     
     def paintEvent(self, e):
@@ -116,103 +116,7 @@ class GameW(OwnW):
         self.ghostWallEdgeCors = self.generateGhostWallEdgeGCoordinateList()
         self.ballCors = self.generateBallGCoordinateList()
         self.powerupCors = [(1,3), (26,3), (1,23), (26,23)]
-    
-    def setOffsetToCoordinates(self, offset):
-        self.pacmanCor         = self.modifyTuppleList(offset, self.pacmanCor)
-        self.fruitCor          = self.modifyTuppleList(offset, self.fruitCor)
-        self.ghostCors         = self.modifyTuppleList(offset, self.ghostCors)
-        self.wallEdgeCors      = self.modifyTuppleList(offset, self.wallEdgeCors)
-        self.ghostWallEdgeCors = self.modifyTuppleList(offset, self.ghostWallEdgeCors)
-        self.ballCors          = self.modifyTuppleList(offset, self.ballCors)
-        self.powerupCors       = self.modifyTuppleList(offset, self.powerupCors)
-    
-    def modifyTuppleList(self, offset, list):
-        newList = []
-        [xOffset, yOffset] = offset
-        for tupple in list:
-            # The buffers are; x:1, y:3
-            newList.append(( xOffset + tupple[0],
-                             yOffset + tupple[1] ))
-        return(newList)
-    
-    def createBodies(self):
-        self.pacmanList = [Pacman(self.MWindow)]
-        self.fruitList = [Fruit(self)]
-        self.ghostList = setupGhostList(self, len(self.ghostCors))
-        self.wallList = setupWallList(self, len(self.wallEdgeCors))
-        self.ghostWallList = setupGhostWallList(self, len(self.ghostWallEdgeCors))
-        self.ballList = setupBallList(self, len(self.ballCors))
-        self.powerupList = setupPowerupList(self, len(self.powerupCors))
-    
-    def setBodyCoordinates(self):
-        self.setCoordinatesForAList(self.pacmanList, self.pacmanCor)
-        self.setCoordinatesForAList(self.fruitList, self.fruitCor)
-        self.setCoordinatesForAList(self.ghostList, self.ghostCors)
-        self.setCoordinatesForAList(self.wallList, self.wallEdgeCors)
-        self.setCoordinatesForAList(self.ghostWallList, self.ghostWallEdgeCors)
-        self.setCoordinatesForAList(self.ballList, self.ballCors)
-        self.setCoordinatesForAList(self.powerupList, self.powerupCors)
-    
-    def setCoordinatesForAList(self, bodyList, corList):
-        for i in range(len(corList)):
-            bodyList[i].setStartCoordinateAndScale(corList[i])
-            bodyList[i].moveToStart()
-    
-    def generateBallGCoordinateList(self):
-        """
-        rows and columns start at count 0
-        and increase to the right and down
-        Coordinates are stored as tuples:
-        (x,y)
-        x is column
-        y is row
-        """
-        l=[]
-        # x 6 & 21
-        for i in range(2,27):
-            l.append((6,i))
-            l.append((21,i))
-        
-        for i in range(1,27):
-            # y 1
-            if i not in [13,14]:
-                l.append((i,1))
-            # y 5 & 29
-            if i not in [6,21]:
-                l.append((i,5))
-            l.append((i,29))
-            # y 8 & 26 & 20 & 23
-            if i not in [6,13,14,21]:
-                l.append((i,20))
-                if i not in [1,4,5,22,23,26]:
-                    l.append((i,23))
-                if i not in [7,8,19,20]:
-                    l.append((i,8))
-                    l.append((i,26))
-        # y 2-4
-        for i in range(2,5):
-            if i!=3:
-                l.append((1,i))
-                l.append((26,i))
-            l.append((12,i))
-            l.append((15,i))
-        # y 6 % 7
-        for i in [1,9,18,26]:
-            l.append((i,6))
-            l.append((i,7))
-        # y 21 &22
-        for i in [1,12,15,26]:
-            l.append((i,21))
-            l.append((i,22))
-        # y 24 & 25
-        for i in [3,9,18,24]:
-            l.append((i,24))
-            l.append((i,25))
-        # y 27 & 28
-        for i in [1,12,15,26]:
-            l.append((i,27))
-            l.append((i,28))
-        return l
+        print("pacmanCor_0\t", self.pacmanCor)
     
     def generateWallEdgeGCoordinateList(self):
         """
@@ -307,6 +211,114 @@ class GameW(OwnW):
             l.append((10,i))
             l.append((17,i))
         return l
+    
+    def generateBallGCoordinateList(self):
+        """
+        rows and columns start at count 0
+        and increase to the right and down
+        Coordinates are stored as tuples:
+        (x,y)
+        x is column
+        y is row
+        """
+        l=[]
+        # x 6 & 21
+        for i in range(2,27):
+            l.append((6,i))
+            l.append((21,i))
+        
+        for i in range(1,27):
+            # y 1
+            if i not in [13,14]:
+                l.append((i,1))
+            # y 5 & 29
+            if i not in [6,21]:
+                l.append((i,5))
+            l.append((i,29))
+            # y 8 & 26 & 20 & 23
+            if i not in [6,13,14,21]:
+                l.append((i,20))
+                if i not in [1,4,5,22,23,26]:
+                    l.append((i,23))
+                if i not in [7,8,19,20]:
+                    l.append((i,8))
+                    l.append((i,26))
+        # y 2-4
+        for i in range(2,5):
+            if i!=3:
+                l.append((1,i))
+                l.append((26,i))
+            l.append((12,i))
+            l.append((15,i))
+        # y 6 % 7
+        for i in [1,9,18,26]:
+            l.append((i,6))
+            l.append((i,7))
+        # y 21 &22
+        for i in [1,12,15,26]:
+            l.append((i,21))
+            l.append((i,22))
+        # y 24 & 25
+        for i in [3,9,18,24]:
+            l.append((i,24))
+            l.append((i,25))
+        # y 27 & 28
+        for i in [1,12,15,26]:
+            l.append((i,27))
+            l.append((i,28))
+        return l
+    
+    
+    def setOffsetToCoordinates(self, offset):
+        self.pacmanCor         = self.modifyTuppleList(offset, self.pacmanCor)
+        self.fruitCor          = self.modifyTuppleList(offset, self.fruitCor)
+        self.ghostCors         = self.modifyTuppleList(offset, self.ghostCors)
+        self.wallEdgeCors      = self.modifyTuppleList(offset, self.wallEdgeCors)
+        self.ghostWallEdgeCors = self.modifyTuppleList(offset, self.ghostWallEdgeCors)
+        self.ballCors          = self.modifyTuppleList(offset, self.ballCors)
+        self.powerupCors       = self.modifyTuppleList(offset, self.powerupCors)
+    
+    def modifyTuppleList(self, offset, list):
+        newList = []
+        [xOffset, yOffset] = offset
+        for tupple in list:
+            # The buffers are; x:1, y:3
+            newList.append(( (xOffset + tupple[0]),
+                             (yOffset + tupple[1]) ))
+        return(newList)
+    
+    
+    def createBodies(self):
+        self.pacmanList     = self.createBodyListFromCorList("Pacman", self.pacmanCor)
+        self.fruitList      = self.createBodyListFromCorList("Fruit", self.fruitCor)
+        self.ghostList      = self.createBodyListFromCorList("Ghost", self.ghostCors)
+        i = 0
+        for ghost in self.ghostList:
+            ghost.setGhostIndex(i)
+            i += 1
+        self.wallList       = self.createBodyListFromCorList("Wall", self.wallEdgeCors)
+        self.ghostWallList  = self.createBodyListFromCorList("GhostWall", self.ghostWallEdgeCors)
+        self.ballList       = self.createBodyListFromCorList("Ball", self.ballCors)
+        self.powerupList    = self.createBodyListFromCorList("Powerup", self.powerupCors)
+    
+    def createBodyListFromCorList(self, BodyClass, CorList):
+        list = []
+        for cor in CorList:
+            if BodyClass == "Pacman":
+                list.append(Pacman(self.MWindow, cor))
+            elif BodyClass == "Fruit":
+                list.append(Fruit(self.MWindow, cor))
+            elif BodyClass == "Ghost":
+                list.append(Ghost(self.MWindow, cor))
+            elif BodyClass == "Wall":
+                list.append(Wall(self.MWindow, cor))
+            elif BodyClass == "GhostWall":
+                list.append(GhostWall(self.MWindow, cor))
+            elif BodyClass == "Ball":
+                list.append(Ball(self.MWindow, cor))
+            elif BodyClass == "Powerup":
+                list.append(Powerup(self.MWindow, cor))
+        return list
 
 class SettingsW(OwnW):
     def __init__(self, MWindow):

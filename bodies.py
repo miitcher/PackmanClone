@@ -16,8 +16,8 @@ DOWN  = 3
 WALLTHICKNESS   = 0.1
 PACMANSIZE      = 2 - 4*WALLTHICKNESS
 GHOSTSIZE       = PACMANSIZE
-BALLSIZE        = 0.3
-POWERUPSIZE     = 0.8
+BALLSIZE        = 0.9
+POWERUPSIZE     = 2.6*BALLSIZE
 FRUITSIZE       = POWERUPSIZE
 
 WALLCOLOUR      = Qt.blue
@@ -32,44 +32,13 @@ PACMANSPEED     = 2
 GHOSTSPEED      = PACMANSPEED
 SLOWGHOSTSPEED  = GHOSTSPEED/2
 
-def setupBodyList(BodyClass, quantity, MWindow):
-    list = []
-    for i in range(quantity):
-        if BodyClass == "Ghost":
-            list.append(Ghost(MWindow, i))
-        elif BodyClass == "Wall":
-            list.append(Wall(MWindow))
-        elif BodyClass == "GhostWall":
-            list.append(GhostWall(MWindow))
-        elif BodyClass == "Ball":
-            list.append(Ball(MWindow))
-        elif BodyClass == "Powerup":
-            list.append(Powerup(MWindow))
-    return list
-
-def setupGhostList(MWindow, quantity):
-    return setupBodyList("Ghost", quantity, MWindow)
-
-def setupWallList(MWindow, quantity):
-    return setupBodyList("Wall", quantity, MWindow)
-
-def setupGhostWallList(MWindow, quantity):
-    return setupBodyList("GhostWall", quantity, MWindow)
-
-def setupBallList(MWindow, quantity):
-    return setupBodyList("Ball", quantity, MWindow)
-
-def setupPowerupList(MWindow, quantity):
-    return setupBodyList("Powerup", quantity, MWindow)
-
 
 class Body():
-    def __init__(self, MWindow):
+    def __init__(self, MWindow, coordinateTupple):
         self.MWindow = MWindow
-    
-    def setStartCoordinateAndScale(self, coordinateTupple):
         xRaw = coordinateTupple[0]
         yRaw = coordinateTupple[1]
+        self.setSize()
         """
         When drawing a body, the coordinate will
         represent the upper-left-corner. Therefore
@@ -81,12 +50,15 @@ class Body():
         self.setThings()
         self.setHitbox()
     
+    def __str__(self):
+        return("(%s, %s)" % (self.x, self.y))
+    
+    def setSize(self):
+        pass
+    
     def moveToStart(self):
         self.x = self.xStart
         self.y = self.yStart
-    
-    def physicsMove(self):
-        return self.MWindow.physics.move(self.x, self.y, self.direction, self.speed)
     
     def setThings(self):
         pass
@@ -98,14 +70,17 @@ class Body():
         self.HBUp    = self.y
         self.HBDown  = self.y + self.size
     
+    def physicsMove(self):
+        return self.MWindow.physics.move(self.x, self.y, self.direction, self.speed)
+    
     def draw(self, painter):
         painter.setBrush(QBrush())
         painter.setPen(QPen())
 
 class Pacman(Body):
-    def __init__(self, MWindow):
-        super().__init__(MWindow)
+    def __init__(self, MWindow, coordinateTupple):
         self.size = PACMANSIZE
+        super().__init__(MWindow, coordinateTupple)
         self.colour = PACMANCOLOUR
         self.direction = RIGHT
         self.speed = PACMANSPEED
@@ -116,6 +91,7 @@ class Pacman(Body):
         self.extraLives = 3
         self.moving = False
         self.nextDirection = None
+        self.c=0
     
     def setThings(self):
         # Map keys
@@ -149,20 +125,22 @@ class Pacman(Body):
             self.MWindow.keyHandler.pressedKey = None
         if self.moving:
             self.move()
+            self.c+=1
+            print(self.c,self.x,self.y)
     
     def move(self):
         [self.x, self.y] = self.physicsMove()
         self.setHitbox()
 
 class Ghost(Body):
-    def __init__(self, MWindow, ghostIndex):
+    def __init__(self, MWindow, coordinateTupple):
         self.size = GHOSTSIZE
-        super().__init__(MWindow)
-        self.ghostIndex = ghostIndex
+        super().__init__(MWindow, coordinateTupple)
         self.colour = Qt.green
         self.speed = GHOSTSPEED
     
-    def setThings(self):
+    def setGhostIndex(self, ghostIndex):
+        self.ghostIndex = ghostIndex
         try:
             self.colour = GHOSTCOLOURLIST[self.ghostIndex]
         except IndexError:
@@ -177,9 +155,9 @@ class Ghost(Body):
         painter.drawRect(self.x, self.y, self.size, self.size)
 
 class Wall(Body):
-    def __init__(self, MWindow):
-        super().__init__(MWindow)
+    def __init__(self, MWindow, coordinateTupple):
         self.size = 1
+        super().__init__(MWindow, coordinateTupple)
         self.wallThickness = WALLTHICKNESS
         self.colour = WALLCOLOUR
     
@@ -199,13 +177,13 @@ class Wall(Body):
         painter.drawLine(self.startPoint2, self.endPoint2)
 
 class GhostWall(Wall):
-    def __init__(self, MWindow):
-        super().__init__(MWindow)
+    def __init__(self, MWindow, coordinateTupple):
+        super().__init__(MWindow, coordinateTupple)
 
 class Ball(Body):
-    def __init__(self, MWindow):
-        super().__init__(MWindow)
+    def __init__(self, MWindow, coordinateTupple):
         self.size = BALLSIZE
+        super().__init__(MWindow, coordinateTupple)
         self.colour = BALLCOLOUR
     
     def draw(self, painter):
@@ -214,10 +192,13 @@ class Ball(Body):
         painter.drawEllipse(self.x, self.y, self.size, self.size)
 
 class Powerup(Ball):
-    def __init__(self, MWindow):
-        super().__init__(MWindow)
-        self.size = POWERUPSIZE
+    def __init__(self, MWindow, coordinateTupple):
+        super().__init__(MWindow, coordinateTupple)
         self.colour = POWERUPCOLOUR
+    
+    def setSize(self):
+        self.size = POWERUPSIZE
+        
 
 class Fruit(Ball):
     """
@@ -231,7 +212,9 @@ class Fruit(Ball):
         Bell
         Key
     """
-    def __init__(self, MWindow):
-        super().__init__(MWindow)
-        self.size = FRUITSIZE
+    def __init__(self, MWindow, coordinateTupple):
+        super().__init__(MWindow, coordinateTupple)
         self.colour = FRUITCOLOUR
+    
+    def setSize(self):
+        self.size = FRUITSIZE
