@@ -6,21 +6,41 @@
 """
 
 from PySide.QtCore import Qt
+from PySide.QtGui import QWidget
 
 
-def keyPressed(currentWidget, *args, **kwargs):
-    print("Key is pressed\nWidget:")
-    print(currentWidget)
-    print("args:")
-    for i in args:
-        print(i)
-    print("kwargs:")
-    for i in kwargs:
-        print(i)
+def eventKeyToString(e):
+    return str(Qt.Key(e.key())).split(".")[-1]
 
 class SettingsError(Exception):
     pass
 
+class KeyHandler():
+    def __init__(self, MWindow):
+        self.MWindow = MWindow
+        self.currentWidget = "MenuW"
+        self.pressedKeys = set() # format in strings: "Key_G"
+        """
+        if str(currentWidget) == "GameW":
+            print("Widget is GameW")
+        
+        if keyE == e.key():
+            print("Match")
+        else:
+            print("Not the same")
+        """
+    
+    def keyPressed(self, currentWidget, e):
+        self.currentWidget = str(currentWidget)
+        self.pressedKeys.add(eventKeyToString(e))
+        print("press",self.pressedKeys)
+    
+    def keyReleased(self, e):
+        if e.isAutoRepeat():
+            e.ignore()
+            return
+        self.pressedKeys.remove(eventKeyToString(e))
+        print("release",self.pressedKeys)
 
 class Settings():
     """

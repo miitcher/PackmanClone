@@ -12,63 +12,10 @@
             are colours: red, cyan, pink and orange
 """
 
-from ui import Settings, keyPressed
 from bodies import *
 
-import sys
 from PySide.QtCore import *
 from PySide.QtGui import *
-
-
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Packman Clone")
-        #TODO: find minimum size
-        #self.setMinimumSize(500, 500)
-    
-    def setupWindow(self, settings):
-        self.settings = settings
-        self.getSettings()
-        self.resize(round(self.width*self.menuScale), round(self.height*self.menuScale))
-        # set MainWindow to center
-        self.toMenuW()
-    
-    def getSettings(self):
-        (self.width, self.height) = self.settings.getResolution()
-        self.menuScale = self.settings.getMenuScale()
-        self.windowMode = self.settings.getWindowMode()
-    
-    def toMenuW(self):
-        self.setCursor(Qt.ArrowCursor)
-        self.menuW = MenuW(self)
-        self.menuW.setupWidget()
-        self.setCentralWidget(self.menuW)
-    
-    def toGameW(self):
-        #self.setCursor(Qt.BlankCursor)
-        self.GameW = GameW(self)
-        self.GameW.setupWidget()
-        if self.windowMode == "Fullscreen":
-            self.resize(self.width, self.height)
-            # should be real fullscreen
-            # self.MWindow.windowMode
-        elif self.windowMode == "Windowed":
-            self.GameW.setMWSize()
-        self.GameW.update()
-        self.setCentralWidget(self.GameW)
-    
-    def toSettingsW(self):
-        self.setCursor(Qt.ArrowCursor)
-        self.SettingsW = SettingsW(self)
-        self.SettingsW.setupWidget()
-        self.setCentralWidget(self.SettingsW)
-    
-    def toHighscoresW(self):
-        self.setCursor(Qt.ArrowCursor)
-        self.HighscoresW = HighscoresW(self)
-        self.HighscoresW.setupWidget()
-        self.setCentralWidget(self.HighscoresW)
 
 
 class OwnW(QWidget):
@@ -79,10 +26,6 @@ class OwnW(QWidget):
         p = self.palette()
         p.setColor(self.backgroundRole(), Qt.black)
         self.setPalette(p)
-    
-    def keyPressEvent(self, *args, **kwargs):
-        print("hello keys")
-        keyPressed(self, *args, **kwargs)
 
 class MenuW(OwnW):
     def __init__(self, MWindow):
@@ -114,6 +57,9 @@ class MenuW(OwnW):
 class GameW(OwnW):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+    
+    def __str__(self):
+        return "GameW"
     
     def setupWidget(self):
         """
@@ -393,10 +339,3 @@ class HighscoresW(OwnW):
     
     def setupWidget(self):
         pass
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    mainWindow = MainWindow()
-    mainWindow.show()
-    sys.exit(app.exec_())
