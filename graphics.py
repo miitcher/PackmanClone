@@ -31,6 +31,9 @@ class MenuW(OwnW):
     def __init__(self, MWindow):
         super().__init__(MWindow)
     
+    def __str__(self):
+        return "MenuW"
+    
     def setupWidget(self):
         StartGameButton = QPushButton("START GAME")
         SettingsButton = QPushButton("SETTINGS")
@@ -330,12 +333,18 @@ class SettingsW(OwnW):
     def __init__(self, MWindow):
         super().__init__(MWindow)
     
+    def __str__(self):
+        return "SettingsW"
+    
     def setupWidget(self):
         pass
 
 class HighscoresW(OwnW):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+    
+    def __str__(self):
+        return "HighscoresW"
     
     def setupWidget(self):
         pass
