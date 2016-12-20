@@ -35,18 +35,6 @@ class Heart():
         for i in g.ghostList:
             print(i.x, i.y)
         """
-        
-        """
-        print(
-        len(g.pacmanPCor),
-        len(g.fruitPCor),
-        len(g.ghostPCors),
-        len(g.wallEdgePCors),
-        len(g.ghostWallEdgePCors),
-        len(g.ballPCors),
-        len(g.powerupPCors)
-        )
-        """
         #sys.exit()
 
 

@@ -12,19 +12,27 @@ RIGHT = 1
 UP    = 2
 DOWN  = 3
 # Relative sizes
-PACKMANSIZE   = 0.95
-GHOSTSIZE     = 0.95
-BALLSIZE      = 0.25
-POWERUPSIZE   = 0.7
-FRUITSIZE     = 0.75
-WALLTHICKNESS = 0.2
+WALLTHICKNESS   = 0.1
+PACMANSIZE      = 2 - 4*WALLTHICKNESS
+GHOSTSIZE       = PACMANSIZE
+BALLSIZE        = 0.3
+POWERUPSIZE     = 0.8
+FRUITSIZE       = POWERUPSIZE
+
+WALLCOLOUR      = Qt.blue
+PACMANCOLOUR    = Qt.yellow
+GHOSTCOLOURLIST = [Qt.red, Qt.cyan, QColor(255,192,203), QColor(255,165,0)]
+# red, cyan, pink, orange
+BALLCOLOUR      = QColor(255,204,153)
+POWERUPCOLOUR   = BALLCOLOUR
+FRUITCOLOUR     = Qt.red
 
 
 def setupBodyList(BodyClass, quantity, MWindow):
     list = []
     for i in range(quantity):
         if BodyClass == "Ghost":
-            list.append(Ghost(MWindow))
+            list.append(Ghost(MWindow, i))
         elif BodyClass == "Wall":
             list.append(Wall(MWindow))
         elif BodyClass == "GhostWall":
@@ -35,20 +43,20 @@ def setupBodyList(BodyClass, quantity, MWindow):
             list.append(Powerup(MWindow))
     return list
 
-def setupGhostList(MWindow):
-    return setupBodyList("Ghost", 4, MWindow)
+def setupGhostList(MWindow, quantity):
+    return setupBodyList("Ghost", quantity, MWindow)
 
-def setupWallList(MWindow):
-    return setupBodyList("Wall", 458, MWindow)
+def setupWallList(MWindow, quantity):
+    return setupBodyList("Wall", quantity, MWindow)
 
-def setupGhostWallList(MWindow):
-    return setupBodyList("GhostWall", 22, MWindow)
+def setupGhostWallList(MWindow, quantity):
+    return setupBodyList("GhostWall", quantity, MWindow)
 
-def setupBallList(MWindow):
-    return setupBodyList("Ball", 240, MWindow)
+def setupBallList(MWindow, quantity):
+    return setupBodyList("Ball", quantity, MWindow)
 
-def setupPowerupList(MWindow):
-    return setupBodyList("Powerup", 4, MWindow)
+def setupPowerupList(MWindow, quantity):
+    return setupBodyList("Powerup", quantity, MWindow)
 
 
 class Body():
@@ -90,53 +98,71 @@ class Body():
         # self.HBList  = [self.HBLeft, self.HBRight, self.HBUp, self.HBDown]
     
     def draw(self, painter):
-        print("Not drawn: ",self)
+        painter.setBrush(QBrush())
+        painter.setPen(QPen())
 
 class Pacman(Body):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+        self.colour = PACMANCOLOUR
         self.direction = RIGHT
         self.firstAngle = 50*16
         self.spanAngle = 260*16
     
     def setSize(self):
-        self.size = self.PToG * PACKMANSIZE
+        self.size = self.PToG * PACMANSIZE
     
     def changeDirection(self, direction):
         self.direction = direction
     
     def draw(self, painter):
-        painter.setBrush(Qt.yellow)
+        Body.draw(self, painter)
+        painter.setBrush(self.colour)
         painter.drawPie(self.x, self.y, self.size, self.size, self.firstAngle, self.spanAngle)
 
 class Ghost(Body):
-    def __init__(self, MWindow):
+    def __init__(self, MWindow, ghostIndex):
         super().__init__(MWindow)
+        self.ghostIndex = ghostIndex
+        self.colour = Qt.green
     
     def setSize(self):
         self.size = self.PToG * GHOSTSIZE
     
+    def setThings(self):
+        try:
+            self.colour = GHOSTCOLOURLIST[self.ghostIndex]
+        except IndexError:
+            self.colour = Qt.green
+    
     def changeDirection(self, direction):
         self.direction = direction
     
     def draw(self, painter):
-        painter.setBrush(Qt.blue)
+        Body.draw(self, painter)
+        painter.setBrush(self.colour)
         painter.drawRect(self.x, self.y, self.size, self.size)
 
 class Wall(Body):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+        self.colour = WALLCOLOUR
     
     def setThings(self):
-        # ATM just vertical line
+        self.wallThickness = self.PToG * WALLTHICKNESS
+        # vertical line
         self.startPoint = QPoint(self.x + self.size/2, self.y)
         self.endPoint   = QPoint(self.x + self.size/2, self.y + self.size)
-        self.wallThickness = self.PToG * WALLTHICKNESS
+        # horisontal line
+        self.startPoint2 = QPoint(self.x, self.y + self.size/2)
+        self.endPoint2   = QPoint(self.x + self.size, self.y + self.size/2)
     
     def draw(self, painter):
-        pen = QPen(Qt.blue, self.wallThickness, Qt.SolidLine)
+        Body.draw(self, painter)
+        pen = QPen(self.colour, self.wallThickness, Qt.SolidLine)
         painter.setPen(pen)
         painter.drawLine(self.startPoint, self.endPoint)
+        painter.drawLine(self.startPoint2, self.endPoint2)
 
 class GhostWall(Wall):
     def __init__(self, MWindow):
@@ -145,19 +171,20 @@ class GhostWall(Wall):
 class Ball(Body):
     def __init__(self, MWindow):
         super().__init__(MWindow)
-        self.colour = Qt.yellow
+        self.colour = BALLCOLOUR
     
     def setSize(self):
         self.size = self.PToG * BALLSIZE
     
     def draw(self, painter):
+        Body.draw(self, painter)
         painter.setBrush(self.colour)
         painter.drawEllipse(self.x, self.y, self.size, self.size)
 
 class Powerup(Ball):
     def __init__(self, MWindow):
         super().__init__(MWindow)
-        self.colour = Qt.magenta
+        self.colour = POWERUPCOLOUR
     
     def setSize(self):
         self.size = self.PToG * POWERUPSIZE
@@ -176,7 +203,7 @@ class Fruit(Ball):
     """
     def __init__(self, MWindow):
         super().__init__(MWindow)
-        self.colour = Qt.red
+        self.colour = FRUITCOLOUR
     
     def setSize(self):
         self.size = self.PToG * FRUITSIZE

@@ -8,8 +8,15 @@
 from PySide.QtCore import Qt
 
 
-def keyPressed(key, currentWidget):
-    pass
+def keyPressed(currentWidget, *args, **kwargs):
+    print("Key is pressed\nWidget:")
+    print(currentWidget)
+    print("args:")
+    for i in args:
+        print(i)
+    print("kwargs:")
+    for i in kwargs:
+        print(i)
 
 class SettingsError(Exception):
     pass

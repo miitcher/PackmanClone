@@ -12,7 +12,7 @@
             are colours: red, cyan, pink and orange
 """
 
-from ui import Settings
+from ui import Settings, keyPressed
 from bodies import *
 
 import sys
@@ -79,6 +79,10 @@ class OwnW(QWidget):
         p = self.palette()
         p.setColor(self.backgroundRole(), Qt.black)
         self.setPalette(p)
+    
+    def keyPressEvent(self, *args, **kwargs):
+        print("hello keys")
+        keyPressed(self, *args, **kwargs)
 
 class MenuW(OwnW):
     def __init__(self, MWindow):
@@ -132,10 +136,19 @@ class GameW(OwnW):
         painter = QPainter()
         painter.begin(self)
         
-        for b in self.BODYLIST:
-            b.draw(painter)
+        self.drawBodyList(self.fruitList, painter)
+        self.drawBodyList(self.powerupList, painter)
+        self.drawBodyList(self.ballList, painter)
+        self.drawBodyList(self.ghostList, painter)
+        self.drawBodyList(self.pacmanList, painter)
+        self.drawBodyList(self.ghostWallList, painter)
+        self.drawBodyList(self.wallList, painter)
         
         painter.end()
+    
+    def drawBodyList(self, bodyList, painter):
+        for b in bodyList:
+            b.draw(painter)
     
     def generateGCors(self):
         self.pacmanGCor = [(13.5,23)]
@@ -145,6 +158,10 @@ class GameW(OwnW):
         self.ghostWallEdgeGCors = self.generateGhostWallEdgeGCoordinateList()
         self.ballGCors = self.generateBallGCoordinateList()
         self.powerupGCors = [(1,3), (26,3), (1,23), (26,23)]
+        """
+        self.wallEdgeGCors.append((2,-2))
+        self.ghostGCors.append((2,-2))
+        """
     
     def makePCorsFromGCors(self):
         """
@@ -193,26 +210,11 @@ class GameW(OwnW):
     def setupBodies(self):
         self.pacmanList = [Pacman(self)]
         self.fruitList = [Fruit(self)]
-        self.ghostList = setupGhostList(self)
-        self.wallList = setupWallList(self)
-        self.ghostWallList = setupGhostWallList(self)
-        self.ballList = setupBallList(self)
-        self.powerupList = setupPowerupList(self)
-        self.addBodiesToBODYLIST() # self.BODYLIST
-    
-    def addBodiesToBODYLIST(self):
-        self.BODYLIST = []
-        self.addListToBodyList(self.pacmanList)
-        self.addListToBodyList(self.fruitList)
-        self.addListToBodyList(self.ghostList)
-        self.addListToBodyList(self.wallList)
-        self.addListToBodyList(self.ghostWallList)
-        self.addListToBodyList(self.ballList)
-        self.addListToBodyList(self.powerupList)
-    
-    def addListToBodyList(self, sourceList):
-        for i in sourceList:
-            self.BODYLIST.append(i)
+        self.ghostList = setupGhostList(self, len(self.ghostPCors))
+        self.wallList = setupWallList(self, len(self.wallEdgePCors))
+        self.ghostWallList = setupGhostWallList(self, len(self.ghostWallEdgePCors))
+        self.ballList = setupBallList(self, len(self.ballPCors))
+        self.powerupList = setupPowerupList(self, len(self.powerupPCors))
     
     def setBodyCoordinates(self):
         self.setCoordinatesForAList(self.pacmanList, self.pacmanPCor)
