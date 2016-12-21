@@ -4,7 +4,7 @@
         https://docs.python.org/3.4/library/unittest.html
 """
 
-import unittest
+import unittest, shutil, os
 from ui import Settings, SettingsError
 from PySide.QtCore import Qt
 
@@ -101,7 +101,40 @@ class TestSettingsMethods(unittest.TestCase):
         self.assertEqual(s.findKeyMeaning(key1), expected1)
         self.assertEqual(s.findKeyMeaning(key2), expected2)
         self.assertEqual(s.findKeyMeaning(key3), expected3)
+    
+    def test_getSettings(self):
+        """
+        getGeneral
+        getResolution
+        getFPS
+        getMenuScale
+        getWindowMode
+        """
+        s = Settings()
+        s.setDefaultSettings()
+        defaultValue = "default_88"
+        FPSValue = 144
+        # usual usecase
+        s.keySettingsDict["FPS"] = [str(FPSValue)]
+        self.assertEqual(s.getGeneral("FPS", defaultValue), 60)
+        self.assertEqual(s.getResolution(), (1280,720))
+        self.assertEqual(s.getFPS(), 60)
+        self.assertEqual(s.getMenuScale(), 0.75)
+        self.assertEqual(s.getWindowMode(), "Windowed")
+        # breaking
+        with self.assertRaises(SettingsError):
+            s.getGeneral("NotASetting", defaultValue)
 
 
 if __name__ == '__main__':
+    """
+    We copy the settings.ini file and use
+    the old file, so the users changed settings
+    does not dissapear.
+    The lines after the "unittest.main()"-line
+    will not be executed.
+    """
+    if not os.path.isfile("settings_BACKUP.ini"):
+        shutil.copyfile("settings.ini", "settings_BACKUP.ini")
+        print('Backup of "settings.ini" created as file: "settings_BACKUP.ini".')
     unittest.main()

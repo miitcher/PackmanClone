@@ -9,9 +9,6 @@ from PySide.QtCore import Qt
 from PySide.QtGui import QWidget, QColor
 
 
-def eventKeyToString(e):
-    return str(Qt.Key(e.key())).split(".")[-1]
-
 class SettingsError(Exception):
     pass
 
@@ -22,6 +19,9 @@ class KeyHandler():
     def keyPressed(self, currentWidget, e):
         self.currentWidget = str(currentWidget)
         self.pressedKey = eventKeyToString(e)
+
+def eventKeyToString(e):
+    return str(Qt.Key(e.key())).split(".")[-1]
 
 class Settings():
     """
@@ -114,21 +114,9 @@ class Settings():
     def writeSettingsToFile(self):
         with open("settings.ini", "w") as f:
             f.write("# SETTINGS\nKEYS")
-            self.writeSettingsFromOneDict(f, self.keySettingsDict)
+            writeSettingsFromOneDict(f, self.keySettingsDict)
             f.write("\nOTHER")
-            self.writeSettingsFromOneDict(f, self.otherSettingsDict)
-    
-    def writeSettingsFromOneDict(self, f, dict):
-        # just used in module writeSettingsToFile
-        for i in dict:
-            line = "\n" + i + " = "
-            c = 1
-            for v in dict[i]:
-                if c > 1:
-                    line += ", "
-                line += v.replace("Key_","")
-                c += 1
-            f.write(line)
+            writeSettingsFromOneDict(f, self.otherSettingsDict)
     
     def setDefaultSettings(self):
         # creates the "settings.ini"-file, or overwrites it if it exists
@@ -181,7 +169,6 @@ class Settings():
                     return(i)
         return None
     
-    
     def getGeneral(self, setting, defaultValue):
         try:
             if setting == "Resolution":
@@ -197,7 +184,7 @@ class Settings():
                 raise SettingsError("Setting %s does not exist." % setting)
             return(value)
         except (ValueError, KeyError):
-            print("Setting %s in wrong format. Try to delete settings.ini-file." % setting)
+            print("Setting %s in wrong format. Using default settings. Try to delete settings.ini-file." % setting)
             return(defaultValue)
     
     def getResolution(self):
@@ -211,3 +198,14 @@ class Settings():
     
     def getWindowMode(self):
         return self.getGeneral("WindowMode", "Windowed")
+
+def writeSettingsFromOneDict(file, dict):
+    for i in dict:
+        line = "\n" + i + " = "
+        c = 1
+        for v in dict[i]:
+            if c > 1:
+                line += ", "
+            line += v.replace("Key_","")
+            c += 1
+        file.write(line)

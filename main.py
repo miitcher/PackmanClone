@@ -11,7 +11,7 @@ from graphics import *
 from ui import Settings, KeyHandler
 from physics import Physics
 
-import sys
+import sys, os, shutil
 from PySide.QtGui import *
 
 
@@ -107,8 +107,19 @@ class MainWindow(QMainWindow):
         self.HighscoresW.setupWidget()
         self.setCentralWidget(self.HighscoresW)
 
+def handleBackup():
+    """
+    If there is a bacaup of the settings-file
+    it will be turned into the used settings-file.
+    """
+    if os.path.isfile("settings_BACKUP.ini"):
+        shutil.copyfile("settings_BACKUP.ini", "settings.ini")
+        os.remove("settings_BACKUP.ini")
+        print('Made "settings_BACKUP.ini" to the "settings.ini".')
+    
 
 if __name__ == '__main__':
+    handleBackup()
     app = QApplication(sys.argv)
     mainWindow = MainWindow()
     settings = Settings()
