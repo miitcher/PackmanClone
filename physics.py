@@ -11,7 +11,7 @@ OPENING = 4
 CLOSING = 5
 
 
-class Physics():
+class Movement():
     def __init__(self, fps):
         self.dt = 1 / fps # smallest time in physics
     
@@ -38,3 +38,16 @@ class Physics():
                 newAngle = angle
                 direction = OPENING
         return(newAngle, direction)
+
+class Collision():
+    """
+    A collision can happen between:
+        pacman - ghost
+        pacman - ball
+        pacman - powerup
+        pacman - fruit
+    Walls don't have hitboxes because
+    of the movwmentPoints.
+    """
+    def __init__(self):
+        pass

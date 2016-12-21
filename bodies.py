@@ -4,7 +4,7 @@
 
 #from sound import PlaySound
 
-from physics import Physics
+from physics import Movement
 
 from PySide.QtCore import *
 from PySide.QtGui import *
@@ -18,7 +18,26 @@ OPENING = 4
 CLOSING = 5
 
 
-class Body(Physics):
+class MovementNodes():
+    """
+    Pacman and the ghosts can move on the 
+    lines between the movement points.
+    Therefore the walls don't need hitboxes.
+    """
+    def __init__(self):
+        self.list = [(1,1),(6,1),(12,1),(15,1),(21,1),(26,1),
+                     (1,5),(6,5),(9,5),(12,5),(15,5),(18,5),(21,5),(26,5),
+                     (1,8),(6,8),(9,8),(12,8),(15,8),(18,8),(21,8),(26,8),
+                     (9,11),(12,11),(13,11),(14,11),(15,11),(18,11),
+                     (-1,14),(6,14),(9,14),(11,14),(13,14),(14,14),
+                        (16,14),(18,14),(21,14),(28,14),
+                     (9,17),(18,17),
+                     (1,20),(6,20),(9,20),(12,20),(15,20),(18,20),(21,20),(26,20),
+                     (1,23),(3,23),(6,23),(9,23),(12,23),(15,23),(18,23),(21,23),(24,23),(26,23),
+                     (1,26),(3,26),(6,26),(9,26),(12,26),(15,26),(18,26),(21,26),(24,26),(26,26),
+                     (1,29),(12,29),(15,29),(26,29)]
+
+class Body(Movement):
     def __init__(self, bodyInput):
         [coordinateTupple, settings] = bodyInput
         super().__init__(settings.getFPS())
@@ -69,6 +88,7 @@ class Pacman(Body):
     def __init__(self, bodyInput):
         [coordinateTupple, settings, keyHandler] = bodyInput
         super().__init__([coordinateTupple, settings])
+        self.movementNodeCors = settings.movementNodeCors
         self.keyHandler = keyHandler
         self.colour = settings.PACMANCOLOUR
         self.speed = settings.PACMANSPEED
@@ -145,6 +165,7 @@ class Ghost(Body):
     def __init__(self, bodyInput):
         super().__init__(bodyInput)
         [coordinateTupple, settings] = bodyInput
+        self.movementNodeCors = settings.movementNodeCors
         self.ghostColourList = settings.GHOSTCOLOURLIST
         self.colour = Qt.green
         self.speed = settings.GHOSTSPEED
