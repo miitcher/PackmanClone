@@ -7,6 +7,8 @@ LEFT  = 0
 RIGHT = 1
 UP    = 2
 DOWN  = 3
+OPENING = 4
+CLOSING = 5
 
 
 class Physics():
@@ -26,3 +28,16 @@ class Physics():
             return(x, y - change)
         elif direction == DOWN:
             return(x, y + change)
+    
+    def moveMouth(self, angle, direction, angleSpeed, maxAngle):
+        if direction == OPENING:
+            newAngle = angle + self.dt * angleSpeed
+            if maxAngle < newAngle:
+                newAngle = angle
+                direction = CLOSING
+        elif direction == CLOSING:
+            newAngle = angle - self.dt * angleSpeed
+            if newAngle < 0:
+                newAngle = angle
+                direction = OPENING
+        return(newAngle, direction)

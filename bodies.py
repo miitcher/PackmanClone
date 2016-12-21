@@ -12,30 +12,14 @@ LEFT  = 0
 RIGHT = 1
 UP    = 2
 DOWN  = 3
-# Relative sizes [GCor]
-WALLTHICKNESS   = 0.1
-PACMANSIZE      = 2 - 4*WALLTHICKNESS
-GHOSTSIZE       = PACMANSIZE
-BALLSIZE        = 0.9
-POWERUPSIZE     = 2.6*BALLSIZE
-FRUITSIZE       = POWERUPSIZE
-
-WALLCOLOUR      = Qt.blue
-PACMANCOLOUR    = Qt.yellow
-GHOSTCOLOURLIST = [Qt.red, Qt.cyan, QColor(255,192,203), QColor(255,165,0)]
-# red, cyan, pink, orange
-BALLCOLOUR      = QColor(255,204,153)
-POWERUPCOLOUR   = BALLCOLOUR
-FRUITCOLOUR     = Qt.red
-# Speeds [GCor/s]
-PACMANSPEED     = 2
-GHOSTSPEED      = PACMANSPEED
-SLOWGHOSTSPEED  = GHOSTSPEED/2
+OPENING = 4
+CLOSING = 5
 
 
 class Body():
     def __init__(self, MWindow, coordinateTupple):
         self.MWindow = MWindow
+        self.settings = self.MWindow.settings
         xRaw = coordinateTupple[0]
         yRaw = coordinateTupple[1]
         self.setSize()
@@ -70,8 +54,9 @@ class Body():
         self.HBUp    = self.y
         self.HBDown  = self.y + self.size
     
-    def physicsMove(self):
-        return self.MWindow.physics.move(self.x, self.y, self.direction, self.speed)
+    def move(self):
+        [self.x, self.y] = self.MWindow.physics.move(self.x, self.y, self.direction, self.speed)
+        self.setHitbox()
     
     def draw(self, painter):
         painter.setBrush(QBrush())
@@ -79,23 +64,35 @@ class Body():
 
 class Pacman(Body):
     def __init__(self, MWindow, coordinateTupple):
-        self.size = PACMANSIZE
         super().__init__(MWindow, coordinateTupple)
-        self.colour = PACMANCOLOUR
+        self.colour = self.settings.PACMANCOLOUR
+        self.speed = self.settings.PACMANSPEED
+        self.mouthAngleSpeed = self.settings.PACMANMOUTHANGLESPEED
+        self.setParameters()
+        self.c=0
+    
+    def setSize(self):
+        self.size = self.settings.PACMANSIZE
+        self.maxHalfAngleOfMouth = self.settings.PACMANMAXMOUTHANGLE / 2
+    
+    def setParameters(self):
         self.direction = RIGHT
-        self.speed = PACMANSPEED
-        self.firstAngle = 50*16
-        self.spanAngle = 260*16
-        
+        self.mouthMovementDirection = CLOSING
+        self.halfAngleOfMouth = self.maxHalfAngleOfMouth
+        self.firstAngle = self.maxHalfAngleOfMouth
+        self.spanAngle = 360 - 2*self.maxHalfAngleOfMouth
         self.alive = True
         self.extraLives = 3
         self.moving = False
         self.nextDirection = None
-        self.c=0
+    
+    def moveToStart(self):
+        Body.moveToStart(self)
+        self.setParameters()
     
     def setThings(self):
         # Map keys
-        keySettingsDict = self.MWindow.settings.keySettingsDict
+        keySettingsDict = self.settings.keySettingsDict
         self.MoveLeft = keySettingsDict["MoveLeft"]
         self.MoveRight = keySettingsDict["MoveRight"]
         self.MoveUp = keySettingsDict["MoveUp"]
@@ -104,7 +101,7 @@ class Pacman(Body):
     def draw(self, painter):
         Body.draw(self, painter)
         painter.setBrush(self.colour)
-        painter.drawPie(self.x, self.y, self.size, self.size, self.firstAngle, self.spanAngle)
+        painter.drawPie(self.x, self.y, self.size, self.size, 16*self.firstAngle, 16*self.spanAngle)
     
     def processPressedKey(self):
         pKey = self.MWindow.keyHandler.pressedKey
@@ -113,41 +110,52 @@ class Pacman(Body):
             if pKey in self.MoveLeft:
                 self.moving = True
                 self.direction = LEFT
+                self.baseAngle = 180
             elif pKey in self.MoveRight:
                 self.moving = True
                 self.direction = RIGHT
+                self.baseAngle = 0
             elif pKey in self.MoveUp:
                 self.moving = True
                 self.direction = UP
+                self.baseAngle = 90
             elif pKey in self.MoveDown:
                 self.moving = True
                 self.direction = DOWN
+                self.baseAngle = -90
             self.MWindow.keyHandler.pressedKey = None
         if self.moving:
             self.move()
-            self.c+=1
-            print(self.c,self.x,self.y)
+            self.moveMouth()
+            #self.c+=1
+            #print(self.c,self.x,self.y)
     
-    def move(self):
-        [self.x, self.y] = self.physicsMove()
-        self.setHitbox()
+    def moveMouth(self):
+        [self.halfAngleOfMouth, self.mouthMovementDirection] = self.MWindow.physics.moveMouth(
+                                                                    self.halfAngleOfMouth,
+                                                                    self.mouthMovementDirection,
+                                                                    self.mouthAngleSpeed,
+                                                                    self.maxHalfAngleOfMouth)
+        self.firstAngle = self.baseAngle + self.halfAngleOfMouth
+        self.spanAngle = 360 - 2*self.halfAngleOfMouth
 
 class Ghost(Body):
     def __init__(self, MWindow, coordinateTupple):
-        self.size = GHOSTSIZE
         super().__init__(MWindow, coordinateTupple)
+        self.ghostColourList = self.settings.GHOSTCOLOURLIST
         self.colour = Qt.green
-        self.speed = GHOSTSPEED
+        self.speed = self.settings.GHOSTSPEED
+        self.slowSpeed = self.settings.SLOWGHOSTSPEED
+    
+    def setSize(self):
+        self.size = self.settings.GHOSTSIZE
     
     def setGhostIndex(self, ghostIndex):
         self.ghostIndex = ghostIndex
         try:
-            self.colour = GHOSTCOLOURLIST[self.ghostIndex]
+            self.colour = self.ghostColourList[self.ghostIndex]
         except IndexError:
             self.colour = Qt.green
-    
-    def changeDirection(self, direction):
-        self.direction = direction
     
     def draw(self, painter):
         Body.draw(self, painter)
@@ -156,10 +164,12 @@ class Ghost(Body):
 
 class Wall(Body):
     def __init__(self, MWindow, coordinateTupple):
-        self.size = 1
         super().__init__(MWindow, coordinateTupple)
-        self.wallThickness = WALLTHICKNESS
-        self.colour = WALLCOLOUR
+        self.wallThickness = self.settings.WALLTHICKNESS
+        self.colour = self.settings.WALLCOLOUR
+    
+    def setSize(self):
+        self.size = self.settings.WALLLENGTH
     
     def setThings(self):
         # vertical line
@@ -182,9 +192,11 @@ class GhostWall(Wall):
 
 class Ball(Body):
     def __init__(self, MWindow, coordinateTupple):
-        self.size = BALLSIZE
         super().__init__(MWindow, coordinateTupple)
-        self.colour = BALLCOLOUR
+        self.colour = self.settings.BALLCOLOUR
+    
+    def setSize(self):
+        self.size = self.settings.BALLSIZE
     
     def draw(self, painter):
         Body.draw(self, painter)
@@ -194,10 +206,10 @@ class Ball(Body):
 class Powerup(Ball):
     def __init__(self, MWindow, coordinateTupple):
         super().__init__(MWindow, coordinateTupple)
-        self.colour = POWERUPCOLOUR
+        self.colour = self.settings.POWERUPCOLOUR
     
     def setSize(self):
-        self.size = POWERUPSIZE
+        self.size = self.settings.POWERUPSIZE
         
 
 class Fruit(Ball):
@@ -214,7 +226,7 @@ class Fruit(Ball):
     """
     def __init__(self, MWindow, coordinateTupple):
         super().__init__(MWindow, coordinateTupple)
-        self.colour = FRUITCOLOUR
+        self.colour = self.settings.FRUITCOLOUR
     
     def setSize(self):
-        self.size = FRUITSIZE
+        self.size = self.settings.FRUITSIZE

@@ -6,7 +6,7 @@
 """
 
 from PySide.QtCore import Qt
-from PySide.QtGui import QWidget
+from PySide.QtGui import QWidget, QColor
 
 
 def eventKeyToString(e):
@@ -16,8 +16,7 @@ class SettingsError(Exception):
     pass
 
 class KeyHandler():
-    def __init__(self, MWindow):
-        self.MWindow = MWindow
+    def __init__(self):
         self.pressedKey = None # format in strings: "Key_G"
     
     def keyPressed(self, currentWidget, e):
@@ -48,6 +47,34 @@ class Settings():
         for i in self.otherSettingsDict:
             s += "\n" + i + ":\t" + str(self.otherSettingsDict[i])
         return s
+    
+    def setVariables(self, corScale):
+        k = corScale
+        print("corScale:",k)
+        # Relative sizes [k * GCor]
+        self.WALLTHICKNESS   = k * 0.1
+        self.WALLLENGTH      = k * 1
+        self.PACMANSIZE      = k * 2 - (4 * self.WALLTHICKNESS)
+        self.GHOSTSIZE       = self.PACMANSIZE
+        self.BALLSIZE        = k * 0.3
+        self.POWERUPSIZE     = self.BALLSIZE * 2.6
+        self.FRUITSIZE       = self.POWERUPSIZE
+        # Angle [degrees]
+        self.PACMANMAXMOUTHANGLE = 100
+        # Angle speed [degrees/s]
+        self.PACMANMOUTHANGLESPEED    = self.PACMANMAXMOUTHANGLE * 10
+        # Speeds [k * GCor/s]
+        self.PACMANSPEED     = k * 10
+        self.GHOSTSPEED      = self.PACMANSPEED
+        self.SLOWGHOSTSPEED  = self.GHOSTSPEED/2
+        # Colours
+        self.WALLCOLOUR      = Qt.blue
+        self.PACMANCOLOUR    = Qt.yellow
+        self.GHOSTCOLOURLIST = [Qt.red, Qt.cyan, QColor(255,192,203), QColor(255,165,0)]
+                                # red, cyan, pink, orange
+        self.BALLCOLOUR      = QColor(255,204,153)
+        self.POWERUPCOLOUR   = self.BALLCOLOUR
+        self.FRUITCOLOUR     = Qt.red
     
     def getSettingsFromFile(self):
         self.keySettingsDict = {}

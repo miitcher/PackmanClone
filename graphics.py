@@ -43,12 +43,14 @@ class MenuW(OwnW):
         StartGameButton.clicked.connect(self.MWindow.toGameW)
         SettingsButton.clicked.connect(self.MWindow.toSettingsW)
         HighscoresButton.clicked.connect(self.MWindow.toHighscoresW)
-        
+        """
+        Show the usable widgets.
+        """
         vbox = QVBoxLayout()
         vbox.addStretch(1)
         vbox.addWidget(StartGameButton)
-        vbox.addWidget(SettingsButton)
-        vbox.addWidget(HighscoresButton)
+        #vbox.addWidget(SettingsButton)
+        #vbox.addWidget(HighscoresButton)
         vbox.addStretch(1)
         
         hbox = QHBoxLayout()
@@ -62,17 +64,17 @@ class GameW(OwnW):
     def __init__(self, MWindow):
         super().__init__(MWindow)
     
+    def __str__(self):
+        return "GameW"
+    
     def startGame(self):
         self.timer = QTimer()
         self.timer.timeout.connect(self.timerEvent)
-        self.timer.start(1000)#/self.MWindow.fps) # [ms]
+        self.timer.start(1000/self.MWindow.fps) # [ms]
     
     def timerEvent(self):
         self.pacmanList[0].processPressedKey()
         self.update()
-    
-    def __str__(self):
-        return "GameW"
     
     def setupWidget(self):
         """
@@ -83,8 +85,13 @@ class GameW(OwnW):
         and the vertical (height) is y as: "(x,y)".
         """
         self.generateCoordinates()
-        self.setOffsetToCoordinates(self.MWindow.CorOffset)
+        self.modifyCoordinateLists()
         self.createBodies()
+        """
+        pacmanCor_0     [(13.5, 23)]
+        pacmanCor     [(14.5, 26)] 
+        pacmanList     (13.7, 25.2)
+        """
         print("pacmanCor\t", self.pacmanCor,
               "\npacmanList\t", self.pacmanList[0])
         print("GameW set")
@@ -92,7 +99,7 @@ class GameW(OwnW):
     def paintEvent(self, e):
         painter = QPainter()
         painter.begin(self)
-        painter.scale(self.MWindow.CorScale, self.MWindow.CorScale)
+        #painter.scale(self.MWindow.CorScale, self.MWindow.CorScale)
         
         self.drawBodyList(self.fruitList, painter)
         self.drawBodyList(self.powerupList, painter)
@@ -269,22 +276,23 @@ class GameW(OwnW):
         return l
     
     
-    def setOffsetToCoordinates(self, offset):
-        self.pacmanCor         = self.modifyTuppleList(offset, self.pacmanCor)
-        self.fruitCor          = self.modifyTuppleList(offset, self.fruitCor)
-        self.ghostCors         = self.modifyTuppleList(offset, self.ghostCors)
-        self.wallEdgeCors      = self.modifyTuppleList(offset, self.wallEdgeCors)
-        self.ghostWallEdgeCors = self.modifyTuppleList(offset, self.ghostWallEdgeCors)
-        self.ballCors          = self.modifyTuppleList(offset, self.ballCors)
-        self.powerupCors       = self.modifyTuppleList(offset, self.powerupCors)
+    def modifyCoordinateLists(self):
+        self.pacmanCor         = self.modifyTuppleList(self.pacmanCor)
+        self.fruitCor          = self.modifyTuppleList(self.fruitCor)
+        self.ghostCors         = self.modifyTuppleList(self.ghostCors)
+        self.wallEdgeCors      = self.modifyTuppleList(self.wallEdgeCors)
+        self.ghostWallEdgeCors = self.modifyTuppleList(self.ghostWallEdgeCors)
+        self.ballCors          = self.modifyTuppleList(self.ballCors)
+        self.powerupCors       = self.modifyTuppleList(self.powerupCors)
     
-    def modifyTuppleList(self, offset, list):
+    def modifyTuppleList(self, list):
         newList = []
-        [xOffset, yOffset] = offset
+        [xOffset, yOffset] = self.MWindow.CorOffset
+        k = self.MWindow.corScale
         for tupple in list:
             # The buffers are; x:1, y:3
-            newList.append(( (xOffset + tupple[0]),
-                             (yOffset + tupple[1]) ))
+            newList.append(( k * (xOffset + tupple[0]),
+                             k * (yOffset + tupple[1]) ))
         return(newList)
     
     

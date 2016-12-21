@@ -21,11 +21,12 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Packman Clone")
     
     def setupWindow(self, settings, physics):
-        self.keyHandler = KeyHandler(self)
+        self.keyHandler = KeyHandler()
         self.settings = settings
         self.physics = physics
         self.getSettings()
         self.calculateCorScale()
+        self.settings.setVariables(self.corScale)
         self.physics.setupPhysics(self.fps)
         
         self.resize(round(self.width*self.menuScale), round(self.height*self.menuScale))
@@ -40,8 +41,8 @@ class MainWindow(QMainWindow):
     
     def calculateCorScale(self):
         """
-        "CorScale" is the ratio between the pixel- and 
-        general coordinates (CorScale = PixelCor / GeneralCor).
+        "corScale" is the ratio between the pixel- and 
+        general coordinates (corScale = PixelCor / GeneralCor).
         
         The GeneralCor game-areas coordinate ranges are:
             x: [0, 27], y: [0, 30]
@@ -62,12 +63,12 @@ class MainWindow(QMainWindow):
         # and PCor with the limiting length.
         if xRatio > yRatio:
             # height (y) limits
-            self.CorScale = yRatio
+            self.corScale = yRatio
         else:
             # width (x) limits
-            self.CorScale = xRatio
+            self.corScale = xRatio
         
-        self.gameAreaSize = (self.CorScale * xLenGCor, self.CorScale * yLenGCor)
+        self.gameAreaSize = (self.corScale * xLenGCor, self.corScale * yLenGCor)
     
     def keyPressEvent(self, e):
         if e.isAutoRepeat():
