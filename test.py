@@ -109,28 +109,32 @@ class TestSettingsMethods(unittest.TestCase):
         self.assertEqual(s.findKeyMeaning(key2), expected2)
         self.assertEqual(s.findKeyMeaning(key3), expected3)
     
-    def test_getSettings(self):
+    def test_makeOtherSettingsAccessible(self):
         """
-        getGeneral
-        getResolution
-        getFPS
-        getMenuScale
-        getWindowMode
+        Resolution
+        FPS
+        MenuScale
+        WindowMode
         """
         s = Settings()
         s.setDefaultSettings()
-        defaultValue = "default_88"
+        #print(s.otherSettingsDict)
+        s.makeOtherSettingsAccessible()
+        
+        self.assertEqual((s.width,s.height), (1280,720))
+        self.assertEqual(s.fps, 60)
+        self.assertEqual(s.menuScale, 0.75)
+        self.assertEqual(s.windowMode, "Windowed")
+        # changing FPS to real value
         FPSValue = 144
-        # usual usecase
-        s.keySettingsDict["FPS"] = [str(FPSValue)]
-        self.assertEqual(s.getGeneral("FPS", defaultValue), 60)
-        self.assertEqual(s.getResolution(), (1280,720))
-        self.assertEqual(s.getFPS(), 60)
-        self.assertEqual(s.getMenuScale(), 0.75)
-        self.assertEqual(s.getWindowMode(), "Windowed")
-        # breaking
-        with self.assertRaises(SettingsError):
-            s.getGeneral("NotASetting", defaultValue)
+        s.otherSettingsDict["FPS"] = [str(FPSValue)]
+        s.makeOtherSettingsAccessible()
+        self.assertEqual(s.fps, FPSValue)
+        # changing MenuScale to wrong value
+        s.otherSettingsDict["MenuScale"] = []
+        s.makeOtherSettingsAccessible()
+        menuScaleDefaultValue = 0.75
+        self.assertEqual(s.menuScale, menuScaleDefaultValue)
 
 class TestBodies(unittest.TestCase):
     # bodies.py
@@ -150,17 +154,6 @@ class TestBodies(unittest.TestCase):
         self.assertEqual(str(b), "(%s, %s)" % (x,y))
         # Hitbox
         expectedHBList = [x, x + size, y, y + size]
-        self.assertEqual(b.HBList, expectedHBList)
-        
-        speed = 2
-        change = 1/60 * speed
-        b.direction = UP
-        b.speed = speed
-        # move
-        b.move()
-        self.assertEqual(str(b), "(%s, %s)" % (x,y-change))
-        expectedHBList[UP] -= change
-        expectedHBList[DOWN] -= change
         self.assertEqual(b.HBList, expectedHBList)
     
     def test_Pacman(self):

@@ -70,7 +70,7 @@ class GameW(OwnW):
     def startGame(self):
         self.timer = QTimer()
         self.timer.timeout.connect(self.timerEvent)
-        self.timer.start(1000/self.MWindow.fps) # [ms]
+        self.timer.start(1000/self.MWindow.settings.fps) # [ms]
     
     def timerEvent(self):
         self.pacmanList[0].processPressedKey()

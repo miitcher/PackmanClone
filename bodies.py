@@ -37,10 +37,10 @@ class MovementNodes():
                      (1,26),(3,26),(6,26),(9,26),(12,26),(15,26),(18,26),(21,26),(24,26),(26,26),
                      (1,29),(12,29),(15,29),(26,29)]
 
-class Body(Movement):
+class Body():
     def __init__(self, bodyInput):
         [coordinateTupple, settings] = bodyInput
-        super().__init__(settings.getFPS())
+        #super().__init__(settings.getFPS())
         xRaw = coordinateTupple[0]
         yRaw = coordinateTupple[1]
         self.setSize(settings)
@@ -76,18 +76,15 @@ class Body(Movement):
         self.HBDown  = self.y + self.size
         self.HBList = [self.HBLeft, self.HBRight, self.HBUp, self.HBDown]
     
-    def move(self):
-        [self.x, self.y] = self.pMove(self.x, self.y, self.direction, self.speed)
-        self.setHitbox()
-    
     def draw(self, painter):
         painter.setBrush(QBrush())
         painter.setPen(QPen())
 
-class Pacman(Body):
+class Pacman(Body, Movement):
     def __init__(self, bodyInput):
         [coordinateTupple, settings, keyHandler] = bodyInput
-        super().__init__([coordinateTupple, settings])
+        Body.__init__(self, [coordinateTupple, settings])
+        Movement.__init__(self, settings.fps)
         self.movementNodeCors = settings.movementNodeCors
         self.keyHandler = keyHandler
         self.colour = settings.PACMANCOLOUR
@@ -117,10 +114,22 @@ class Pacman(Body):
     def setThings(self, settings):
         # Map keys
         keySettingsDict = settings.keySettingsDict
-        self.MoveLeft = keySettingsDict["MoveLeft"]
-        self.MoveRight = keySettingsDict["MoveRight"]
-        self.MoveUp = keySettingsDict["MoveUp"]
-        self.MoveDown = keySettingsDict["MoveDown"]
+        try:
+            self.MoveLeft = keySettingsDict["MoveLeft"]
+        except Exception:
+            self.MoveLeft = ["Key_A"]
+        try:
+            self.MoveRight = keySettingsDict["MoveRight"]
+        except Exception:
+            self.MoveRight = ["Key_D"]
+        try:
+            self.MoveUp = keySettingsDict["MoveUp"]
+        except Exception:
+            self.MoveUp = ["Key_W"]
+        try:
+            self.MoveDown = keySettingsDict["MoveDown"]
+        except Exception:
+            self.MoveDown = ["Key_S"]
     
     def draw(self, painter):
         Body.draw(self, painter)
@@ -152,6 +161,10 @@ class Pacman(Body):
             self.move()
             self.moveMouth()
     
+    def move(self):
+        [self.x, self.y] = self.pMove(self.x, self.y, self.direction, self.speed)
+        self.setHitbox()
+    
     def moveMouth(self):
         [self.halfAngleOfMouth, self.mouthMovementDirection] = self.pMoveMouth(
                                                                     self.halfAngleOfMouth,
@@ -161,10 +174,11 @@ class Pacman(Body):
         self.firstAngle = self.baseAngle + self.halfAngleOfMouth
         self.spanAngle = 360 - 2*self.halfAngleOfMouth
 
-class Ghost(Body):
+class Ghost(Body, Movement):
     def __init__(self, bodyInput):
-        super().__init__(bodyInput)
         [coordinateTupple, settings] = bodyInput
+        Body.__init__(self, bodyInput)
+        Movement.__init__(self, settings.fps)
         self.movementNodeCors = settings.movementNodeCors
         self.ghostColourList = settings.GHOSTCOLOURLIST
         self.colour = Qt.green

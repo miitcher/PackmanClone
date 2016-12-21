@@ -18,10 +18,7 @@ class KeyHandler():
     
     def keyPressed(self, currentWidget, e):
         self.currentWidget = str(currentWidget)
-        self.pressedKey = eventKeyToString(e)
-
-def eventKeyToString(e):
-    return str(Qt.Key(e.key())).split(".")[-1]
+        self.pressedKey = str(Qt.Key(e.key())).split(".")[-1]
 
 class Settings():
     """
@@ -34,10 +31,12 @@ class Settings():
         --> After changing a dictionary; writeSettingsToFile().
     """
     def __init__(self):
+        self.minorProblems = []
         try:
             self.getSettingsFromFile()
         except FileNotFoundError:
             self.setDefaultSettings()
+        self.makeOtherSettingsAccessible()
     
     def __str__(self):
         s = "\tSETTINGS\nKEYS"
@@ -49,6 +48,10 @@ class Settings():
         return s
     
     def setVariables(self, corScale):
+        """
+        Needs to be called if you want to access
+        the variables.
+        """
         k = corScale
         # Relative sizes [k * GCor]
         self.WALLTHICKNESS   = k * 0.1
@@ -113,9 +116,21 @@ class Settings():
     def writeSettingsToFile(self):
         with open("settings.ini", "w") as f:
             f.write("# SETTINGS\nKEYS")
-            writeSettingsFromOneDict(f, self.keySettingsDict)
+            self.writeSettingsFromOneDict(f, self.keySettingsDict)
             f.write("\nOTHER")
-            writeSettingsFromOneDict(f, self.otherSettingsDict)
+            self.writeSettingsFromOneDict(f, self.otherSettingsDict)
+    
+    @staticmethod
+    def writeSettingsFromOneDict(file, dict):
+        for i in dict:
+            line = "\n" + i + " = "
+            c = 1
+            for v in dict[i]:
+                if c > 1:
+                    line += ", "
+                line += v.replace("Key_","")
+                c += 1
+            file.write(line)
     
     def setDefaultSettings(self):
         # creates the "settings.ini"-file, or overwrites it if it exists
@@ -168,43 +183,47 @@ class Settings():
                     return(i)
         return None
     
-    def getGeneral(self, setting, defaultValue):
+    def makeOtherSettingsAccessible(self):
+        """
+        Needs to be called if you want to access
+        the updated otherSettings.
+        """
+        settingsNotReadList = []
+        # Resolution
         try:
-            if setting == "Resolution":
-                [w,h] = self.otherSettingsDict[setting][0].split("x")
-                value = (int(w), int(h))
-            elif setting == "FPS":
-                value = int(self.otherSettingsDict[setting][0])
-            elif setting == "MenuScale":
-                value = float(self.otherSettingsDict[setting][0])
-            elif setting == "WindowMode":
-                value = self.otherSettingsDict[setting][0].strip()
-            else:
-                raise SettingsError("Setting %s does not exist." % setting)
-            return(value)
-        except (ValueError, KeyError):
-            print("Setting %s in wrong format. Using default settings. Try to delete settings.ini-file." % setting)
-            return(defaultValue)
-    
-    def getResolution(self):
-        return self.getGeneral("Resolution", (1270,720))
-    
-    def getFPS(self):
-        return self.getGeneral("FPS", 60)
-    
-    def getMenuScale(self):
-        return self.getGeneral("MenuScale", 0.75)
-    
-    def getWindowMode(self):
-        return self.getGeneral("WindowMode", "Windowed")
-
-def writeSettingsFromOneDict(file, dict):
-    for i in dict:
-        line = "\n" + i + " = "
-        c = 1
-        for v in dict[i]:
-            if c > 1:
-                line += ", "
-            line += v.replace("Key_","")
-            c += 1
-        file.write(line)
+            [w,h] = self.otherSettingsDict["Resolution"][0].split("x")
+            self.width = int(w)
+            self.height = int(h)
+        except Exception:
+            settingsNotReadList.append("Resolution")
+            self.width = 1280
+            self.height = 720
+        # FPS
+        try:
+            self.fps = int(self.otherSettingsDict["FPS"][0])
+        except Exception:
+            settingsNotReadList.append("FPS")
+            self.fps = 60
+        # MenuScale
+        try:
+            self.menuScale = float(self.otherSettingsDict["MenuScale"][0])
+        except Exception:
+            settingsNotReadList.append("MenuScale")
+            self.menuScale = 0.75
+        # WindowMode
+        try:
+            self.windowMode = self.otherSettingsDict["WindowMode"][0].strip()
+        except Exception:
+            settingsNotReadList.append("WindowMode")
+            self.windowMode = "Windowed"
+        
+        if settingsNotReadList:
+            s = "Settings "
+            c = len(settingsNotReadList)
+            for i in settingsNotReadList:
+                s += i
+                c -= 1
+                if c > 0:
+                    s += ", "
+            s += ' could not be read, so default settings are used.\tFix problem by deleting "settings.ini"-file.'
+            self.minorProblems.append(s)
