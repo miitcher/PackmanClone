@@ -18,8 +18,9 @@ CLOSING = 5
 
 class Body():
     def __init__(self, MWindow, coordinateTupple):
-        self.MWindow = MWindow
-        self.settings = self.MWindow.settings
+        self.settings = MWindow.settings
+        self.physics = MWindow.physics
+        self.keyHandler = MWindow.keyHandler
         xRaw = coordinateTupple[0]
         yRaw = coordinateTupple[1]
         self.setSize()
@@ -38,7 +39,7 @@ class Body():
         return("(%s, %s)" % (self.x, self.y))
     
     def setSize(self):
-        pass
+        self.size = 1
     
     def moveToStart(self):
         self.x = self.xStart
@@ -53,9 +54,10 @@ class Body():
         self.HBRight = self.x + self.size
         self.HBUp    = self.y
         self.HBDown  = self.y + self.size
+        self.HBList = [self.HBLeft, self.HBRight, self.HBUp, self.HBDown]
     
     def move(self):
-        [self.x, self.y] = self.MWindow.physics.move(self.x, self.y, self.direction, self.speed)
+        [self.x, self.y] = self.physics.move(self.x, self.y, self.direction, self.speed)
         self.setHitbox()
     
     def draw(self, painter):
@@ -69,7 +71,6 @@ class Pacman(Body):
         self.speed = self.settings.PACMANSPEED
         self.mouthAngleSpeed = self.settings.PACMANMOUTHANGLESPEED
         self.setParameters()
-        self.c=0
     
     def setSize(self):
         self.size = self.settings.PACMANSIZE
@@ -104,9 +105,9 @@ class Pacman(Body):
         painter.drawPie(self.x, self.y, self.size, self.size, 16*self.firstAngle, 16*self.spanAngle)
     
     def processPressedKey(self):
-        pKey = self.MWindow.keyHandler.pressedKey
+        pKey = self.keyHandler.pressedKey
         if self.alive and pKey:
-            print(pKey,"pressed")
+            #print(pKey,"pressed")
             if pKey in self.MoveLeft:
                 self.moving = True
                 self.direction = LEFT
@@ -123,15 +124,13 @@ class Pacman(Body):
                 self.moving = True
                 self.direction = DOWN
                 self.baseAngle = -90
-            self.MWindow.keyHandler.pressedKey = None
+            self.keyHandler.pressedKey = None
         if self.moving:
             self.move()
             self.moveMouth()
-            #self.c+=1
-            #print(self.c,self.x,self.y)
     
     def moveMouth(self):
-        [self.halfAngleOfMouth, self.mouthMovementDirection] = self.MWindow.physics.moveMouth(
+        [self.halfAngleOfMouth, self.mouthMovementDirection] = self.physics.moveMouth(
                                                                     self.halfAngleOfMouth,
                                                                     self.mouthMovementDirection,
                                                                     self.mouthAngleSpeed,

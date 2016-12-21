@@ -87,13 +87,6 @@ class GameW(OwnW):
         self.generateCoordinates()
         self.modifyCoordinateLists()
         self.createBodies()
-        """
-        pacmanCor_0     [(13.5, 23)]
-        pacmanCor     [(14.5, 26)] 
-        pacmanList     (13.7, 25.2)
-        """
-        print("pacmanCor\t", self.pacmanCor,
-              "\npacmanList\t", self.pacmanList[0])
         print("GameW set")
     
     def paintEvent(self, e):
@@ -123,7 +116,6 @@ class GameW(OwnW):
         self.ghostWallEdgeCors = self.generateGhostWallEdgeGCoordinateList()
         self.ballCors = self.generateBallGCoordinateList()
         self.powerupCors = [(1,3), (26,3), (1,23), (26,23)]
-        print("pacmanCor_0\t", self.pacmanCor)
     
     def generateWallEdgeGCoordinateList(self):
         """
@@ -287,7 +279,7 @@ class GameW(OwnW):
     
     def modifyTuppleList(self, list):
         newList = []
-        [xOffset, yOffset] = self.MWindow.CorOffset
+        [xOffset, yOffset] = self.MWindow.corOffset
         k = self.MWindow.corScale
         for tupple in list:
             # The buffers are; x:1, y:3

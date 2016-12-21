@@ -50,7 +50,6 @@ class Settings():
     
     def setVariables(self, corScale):
         k = corScale
-        print("corScale:",k)
         # Relative sizes [k * GCor]
         self.WALLTHICKNESS   = k * 0.1
         self.WALLLENGTH      = k * 1

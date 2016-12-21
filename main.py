@@ -19,27 +19,29 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Packman Clone")
-    
-    def setupWindow(self, settings, physics):
-        self.keyHandler = KeyHandler()
-        self.settings = settings
-        self.physics = physics
-        self.getSettings()
-        self.calculateCorScale()
-        self.settings.setVariables(self.corScale)
-        self.physics.setupPhysics(self.fps)
         
-        self.resize(round(self.width*self.menuScale), round(self.height*self.menuScale))
+        self.keyHandler = KeyHandler()
+        self.settings = Settings()
+        self.physics = Physics()
+        self.processSettingsChanged()
+        
         # set MainWindow to center
         self.toMenuW()
     
-    def getSettings(self):
+    def processSettingsChanged(self):
+        #Called when settings changed.
+        self.getSettingValues()
+        self.calculateCorScaleAndCorOffset()
+        self.settings.setVariables(self.corScale)
+        self.physics.setupPhysics(self.fps)
+    
+    def getSettingValues(self):
         (self.width, self.height) = self.settings.getResolution()
         self.fps = self.settings.getFPS()
         self.menuScale = self.settings.getMenuScale()
         self.windowMode = self.settings.getWindowMode()
     
-    def calculateCorScale(self):
+    def calculateCorScaleAndCorOffset(self):
         """
         "corScale" is the ratio between the pixel- and 
         general coordinates (corScale = PixelCor / GeneralCor).
@@ -54,7 +56,7 @@ class MainWindow(QMainWindow):
             x: 29, y: 35
         The extra space up and left need buffers.
         """
-        self.CorOffset = (1,3)
+        self.corOffset = (1,3)
         xLenGCor = 29   # 27 + 2
         yLenGCor = 35   # 30 + 5
         xRatio = self.width  / xLenGCor
@@ -77,6 +79,7 @@ class MainWindow(QMainWindow):
         self.keyHandler.keyPressed(self.centralWidget(), e)
     
     def toMenuW(self):
+        self.resize(round(self.width*self.menuScale), round(self.height*self.menuScale))
         self.setCursor(Qt.ArrowCursor)
         self.menuW = MenuW(self)
         self.menuW.setupWidget()
@@ -122,9 +125,6 @@ if __name__ == '__main__':
     handleBackup()
     app = QApplication(sys.argv)
     mainWindow = MainWindow()
-    settings = Settings()
-    physics = Physics()
-    mainWindow.setupWindow(settings, physics)
     # TESTING
     mainWindow.toGameW()
     #sys.exit()

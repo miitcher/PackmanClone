@@ -4,12 +4,19 @@
         https://docs.python.org/3.4/library/unittest.html
 """
 
-import unittest, shutil, os
-from ui import Settings, SettingsError
+from ui import *
+from bodies import *
+from main import *
+from graphics import *
+from physics import *
+
+import unittest, shutil, os, sys
+
 from PySide.QtCore import Qt
 
+
 class TestSettingsMethods(unittest.TestCase):
-    
+    # ui.py
     def test_initSettings(self):
         s = Settings()
         s.keySettingsDict = {"Pause":["Key_0"]}
@@ -124,6 +131,41 @@ class TestSettingsMethods(unittest.TestCase):
         # breaking
         with self.assertRaises(SettingsError):
             s.getGeneral("NotASetting", defaultValue)
+
+class TestBodies(unittest.TestCase):
+    # bodies.py
+    def test_Body(self):
+        app = QApplication(sys.argv)
+        mw = MainWindow()
+        mw.settings.setDefaultSettings()
+        mw.processSettingsChanged()
+        
+        x0 = 3
+        y0 = 5
+        size = 1 # default value
+        x = x0 - size/2
+        y = y0 - size/2
+        
+        b = Body(mw, (x0,y0))
+        # str
+        self.assertEqual(str(b), "(%s, %s)" % (x,y))
+        # Hitbox
+        expectedHBList = [x, x + size, y, y + size]
+        self.assertEqual(b.HBList, expectedHBList)
+        
+        speed = 2
+        change = 1/60 * speed
+        b.direction = UP
+        b.speed = speed
+        # move
+        b.move()
+        self.assertEqual(str(b), "(%s, %s)" % (x,y-change))
+        expectedHBList[UP] -= change
+        expectedHBList[DOWN] -= change
+        self.assertEqual(b.HBList, expectedHBList)
+    
+    def test_Pacman(self):
+        pass
 
 
 if __name__ == '__main__':
