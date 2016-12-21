@@ -307,20 +307,21 @@ class GameW(OwnW):
     def createBodyListFromCorList(self, BodyClass, CorList):
         list = []
         for cor in CorList:
+            bodyInput = [cor, self.MWindow.keyHandler, self.MWindow.settings]
             if BodyClass == "Pacman":
-                list.append(Pacman(self.MWindow, cor, self.MWindow.fps))
+                list.append(Pacman(bodyInput))
             elif BodyClass == "Fruit":
-                list.append(Fruit(self.MWindow, cor, self.MWindow.fps))
+                list.append(Fruit(bodyInput))
             elif BodyClass == "Ghost":
-                list.append(Ghost(self.MWindow, cor, self.MWindow.fps))
+                list.append(Ghost(bodyInput))
             elif BodyClass == "Wall":
-                list.append(Wall(self.MWindow, cor, self.MWindow.fps))
+                list.append(Wall(bodyInput))
             elif BodyClass == "GhostWall":
-                list.append(GhostWall(self.MWindow, cor, self.MWindow.fps))
+                list.append(GhostWall(bodyInput))
             elif BodyClass == "Ball":
-                list.append(Ball(self.MWindow, cor, self.MWindow.fps))
+                list.append(Ball(bodyInput))
             elif BodyClass == "Powerup":
-                list.append(Powerup(self.MWindow, cor, self.MWindow.fps))
+                list.append(Powerup(bodyInput))
         return list
 
 class SettingsW(OwnW):

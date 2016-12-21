@@ -135,10 +135,9 @@ class TestSettingsMethods(unittest.TestCase):
 class TestBodies(unittest.TestCase):
     # bodies.py
     def test_Body(self):
-        app = QApplication(sys.argv)
-        mw = MainWindow()
-        mw.settings.setDefaultSettings()
-        mw.processSettingsChanged()
+        s = Settings()
+        s.setDefaultSettings()
+        s.setVariables(1) # input is corScale
         
         x0 = 3
         y0 = 5
@@ -146,7 +145,7 @@ class TestBodies(unittest.TestCase):
         x = x0 - size/2
         y = y0 - size/2
         
-        b = Body(mw, (x0,y0), 60)
+        b = Body([(x0,y0), KeyHandler(), s])
         # str
         self.assertEqual(str(b), "(%s, %s)" % (x,y))
         # Hitbox
