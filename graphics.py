@@ -307,8 +307,9 @@ class GameW(OwnW):
     def createBodyListFromCorList(self, BodyClass, CorList):
         list = []
         for cor in CorList:
-            bodyInput = [cor, self.MWindow.keyHandler, self.MWindow.settings]
+            bodyInput = [cor, self.MWindow.settings]
             if BodyClass == "Pacman":
+                bodyInput = [cor, self.MWindow.settings, self.MWindow.keyHandler]
                 list.append(Pacman(bodyInput))
             elif BodyClass == "Fruit":
                 list.append(Fruit(bodyInput))

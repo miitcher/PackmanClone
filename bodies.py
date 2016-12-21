@@ -20,9 +20,8 @@ CLOSING = 5
 
 class Body(Physics):
     def __init__(self, bodyInput):
-        [coordinateTupple, keyHandler, settings] = bodyInput
+        [coordinateTupple, settings] = bodyInput
         super().__init__(settings.getFPS())
-        self.keyHandler = keyHandler
         xRaw = coordinateTupple[0]
         yRaw = coordinateTupple[1]
         self.setSize(settings)
@@ -68,8 +67,9 @@ class Body(Physics):
 
 class Pacman(Body):
     def __init__(self, bodyInput):
-        super().__init__(bodyInput)
-        [coordinateTupple, keyHandler, settings] = bodyInput
+        [coordinateTupple, settings, keyHandler] = bodyInput
+        super().__init__([coordinateTupple, settings])
+        self.keyHandler = keyHandler
         self.colour = settings.PACMANCOLOUR
         self.speed = settings.PACMANSPEED
         self.mouthAngleSpeed = settings.PACMANMOUTHANGLESPEED
@@ -144,7 +144,7 @@ class Pacman(Body):
 class Ghost(Body):
     def __init__(self, bodyInput):
         super().__init__(bodyInput)
-        [coordinateTupple, keyHandler, settings] = bodyInput
+        [coordinateTupple, settings] = bodyInput
         self.ghostColourList = settings.GHOSTCOLOURLIST
         self.colour = Qt.green
         self.speed = settings.GHOSTSPEED
@@ -168,7 +168,7 @@ class Ghost(Body):
 class Wall(Body):
     def __init__(self, bodyInput):
         super().__init__(bodyInput)
-        [coordinateTupple, keyHandler, settings] = bodyInput
+        [coordinateTupple, settings] = bodyInput
         self.wallThickness = settings.WALLTHICKNESS
         self.colour = settings.WALLCOLOUR
     
@@ -193,12 +193,12 @@ class Wall(Body):
 class GhostWall(Wall):
     def __init__(self, bodyInput):
         super().__init__(bodyInput)
-        [coordinateTupple, keyHandler, settings] = bodyInput
+        #[coordinateTupple, settings] = bodyInput
 
 class Ball(Body):
     def __init__(self, bodyInput):
         super().__init__(bodyInput)
-        [coordinateTupple, keyHandler, settings] = bodyInput
+        [coordinateTupple, settings] = bodyInput
         self.colour = settings.BALLCOLOUR
     
     def setSize(self, settings):
@@ -212,7 +212,7 @@ class Ball(Body):
 class Powerup(Ball):
     def __init__(self, bodyInput):
         super().__init__(bodyInput)
-        [coordinateTupple, keyHandler, settings] = bodyInput
+        [coordinateTupple, settings] = bodyInput
         self.colour = settings.POWERUPCOLOUR
     
     def setSize(self, settings):
@@ -233,8 +233,8 @@ class Fruit(Ball):
     """
     def __init__(self, bodyInput):
         super().__init__(bodyInput)
-        [coordinateTupple, keyHandler, settings] = bodyInput
-        self.colour = settings.FRUITCOLOUR
+        [coordinateTupple, settings] = bodyInput
+        #self.colour = settings.FRUITCOLOUR
     
     def setSize(self, settings):
         self.size = settings.FRUITSIZE
