@@ -12,13 +12,10 @@ CLOSING = 5
 
 
 class Physics():
-    def __init__(self):
-        pass
-    
-    def setupPhysics(self, fps):
+    def __init__(self, fps):
         self.dt = 1 / fps # smallest time in physics
     
-    def move(self, x, y, direction, speed):
+    def pMove(self, x, y, direction, speed):
         change = self.dt * speed
         if direction == LEFT:
             return(x - change, y)
@@ -29,7 +26,7 @@ class Physics():
         elif direction == DOWN:
             return(x, y + change)
     
-    def moveMouth(self, angle, direction, angleSpeed, maxAngle):
+    def pMoveMouth(self, angle, direction, angleSpeed, maxAngle):
         if direction == OPENING:
             newAngle = angle + self.dt * angleSpeed
             if maxAngle < newAngle:

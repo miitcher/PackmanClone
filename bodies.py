@@ -4,6 +4,8 @@
 
 #from sound import PlaySound
 
+from physics import Physics
+
 from PySide.QtCore import *
 from PySide.QtGui import *
 
@@ -16,10 +18,10 @@ OPENING = 4
 CLOSING = 5
 
 
-class Body():
-    def __init__(self, MWindow, coordinateTupple):
+class Body(Physics):
+    def __init__(self, MWindow, coordinateTupple, fps):
+        super().__init__(fps)
         self.settings = MWindow.settings
-        self.physics = MWindow.physics
         self.keyHandler = MWindow.keyHandler
         xRaw = coordinateTupple[0]
         yRaw = coordinateTupple[1]
@@ -57,7 +59,7 @@ class Body():
         self.HBList = [self.HBLeft, self.HBRight, self.HBUp, self.HBDown]
     
     def move(self):
-        [self.x, self.y] = self.physics.move(self.x, self.y, self.direction, self.speed)
+        [self.x, self.y] = self.pMove(self.x, self.y, self.direction, self.speed)
         self.setHitbox()
     
     def draw(self, painter):
@@ -65,8 +67,8 @@ class Body():
         painter.setPen(QPen())
 
 class Pacman(Body):
-    def __init__(self, MWindow, coordinateTupple):
-        super().__init__(MWindow, coordinateTupple)
+    def __init__(self, MWindow, coordinateTupple, fps):
+        super().__init__(MWindow, coordinateTupple, fps)
         self.colour = self.settings.PACMANCOLOUR
         self.speed = self.settings.PACMANSPEED
         self.mouthAngleSpeed = self.settings.PACMANMOUTHANGLESPEED
@@ -130,7 +132,7 @@ class Pacman(Body):
             self.moveMouth()
     
     def moveMouth(self):
-        [self.halfAngleOfMouth, self.mouthMovementDirection] = self.physics.moveMouth(
+        [self.halfAngleOfMouth, self.mouthMovementDirection] = self.pMoveMouth(
                                                                     self.halfAngleOfMouth,
                                                                     self.mouthMovementDirection,
                                                                     self.mouthAngleSpeed,
@@ -139,8 +141,8 @@ class Pacman(Body):
         self.spanAngle = 360 - 2*self.halfAngleOfMouth
 
 class Ghost(Body):
-    def __init__(self, MWindow, coordinateTupple):
-        super().__init__(MWindow, coordinateTupple)
+    def __init__(self, MWindow, coordinateTupple, fps):
+        super().__init__(MWindow, coordinateTupple, fps)
         self.ghostColourList = self.settings.GHOSTCOLOURLIST
         self.colour = Qt.green
         self.speed = self.settings.GHOSTSPEED
@@ -162,8 +164,8 @@ class Ghost(Body):
         painter.drawRect(self.x, self.y, self.size, self.size)
 
 class Wall(Body):
-    def __init__(self, MWindow, coordinateTupple):
-        super().__init__(MWindow, coordinateTupple)
+    def __init__(self, MWindow, coordinateTupple, fps):
+        super().__init__(MWindow, coordinateTupple, fps)
         self.wallThickness = self.settings.WALLTHICKNESS
         self.colour = self.settings.WALLCOLOUR
     
@@ -186,12 +188,12 @@ class Wall(Body):
         painter.drawLine(self.startPoint2, self.endPoint2)
 
 class GhostWall(Wall):
-    def __init__(self, MWindow, coordinateTupple):
-        super().__init__(MWindow, coordinateTupple)
+    def __init__(self, MWindow, coordinateTupple, fps):
+        super().__init__(MWindow, coordinateTupple, fps)
 
 class Ball(Body):
-    def __init__(self, MWindow, coordinateTupple):
-        super().__init__(MWindow, coordinateTupple)
+    def __init__(self, MWindow, coordinateTupple, fps):
+        super().__init__(MWindow, coordinateTupple, fps)
         self.colour = self.settings.BALLCOLOUR
     
     def setSize(self):
@@ -203,8 +205,8 @@ class Ball(Body):
         painter.drawEllipse(self.x, self.y, self.size, self.size)
 
 class Powerup(Ball):
-    def __init__(self, MWindow, coordinateTupple):
-        super().__init__(MWindow, coordinateTupple)
+    def __init__(self, MWindow, coordinateTupple, fps):
+        super().__init__(MWindow, coordinateTupple, fps)
         self.colour = self.settings.POWERUPCOLOUR
     
     def setSize(self):
@@ -223,8 +225,8 @@ class Fruit(Ball):
         Bell
         Key
     """
-    def __init__(self, MWindow, coordinateTupple):
-        super().__init__(MWindow, coordinateTupple)
+    def __init__(self, MWindow, coordinateTupple, fps):
+        super().__init__(MWindow, coordinateTupple, fps)
         self.colour = self.settings.FRUITCOLOUR
     
     def setSize(self):

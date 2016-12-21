@@ -146,7 +146,7 @@ class TestBodies(unittest.TestCase):
         x = x0 - size/2
         y = y0 - size/2
         
-        b = Body(mw, (x0,y0))
+        b = Body(mw, (x0,y0), 60)
         # str
         self.assertEqual(str(b), "(%s, %s)" % (x,y))
         # Hitbox

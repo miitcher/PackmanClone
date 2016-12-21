@@ -89,6 +89,9 @@ class GameW(OwnW):
         self.createBodies()
         print("GameW set")
     
+    def setupPhysicsForBodies(self):
+        pass
+    
     def paintEvent(self, e):
         painter = QPainter()
         painter.begin(self)
@@ -305,19 +308,19 @@ class GameW(OwnW):
         list = []
         for cor in CorList:
             if BodyClass == "Pacman":
-                list.append(Pacman(self.MWindow, cor))
+                list.append(Pacman(self.MWindow, cor, self.MWindow.fps))
             elif BodyClass == "Fruit":
-                list.append(Fruit(self.MWindow, cor))
+                list.append(Fruit(self.MWindow, cor, self.MWindow.fps))
             elif BodyClass == "Ghost":
-                list.append(Ghost(self.MWindow, cor))
+                list.append(Ghost(self.MWindow, cor, self.MWindow.fps))
             elif BodyClass == "Wall":
-                list.append(Wall(self.MWindow, cor))
+                list.append(Wall(self.MWindow, cor, self.MWindow.fps))
             elif BodyClass == "GhostWall":
-                list.append(GhostWall(self.MWindow, cor))
+                list.append(GhostWall(self.MWindow, cor, self.MWindow.fps))
             elif BodyClass == "Ball":
-                list.append(Ball(self.MWindow, cor))
+                list.append(Ball(self.MWindow, cor, self.MWindow.fps))
             elif BodyClass == "Powerup":
-                list.append(Powerup(self.MWindow, cor))
+                list.append(Powerup(self.MWindow, cor, self.MWindow.fps))
         return list
 
 class SettingsW(OwnW):

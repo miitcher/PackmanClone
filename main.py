@@ -9,7 +9,6 @@
 
 from graphics import *
 from ui import Settings, KeyHandler
-from physics import Physics
 
 import sys, os, shutil
 from PySide.QtGui import *
@@ -22,7 +21,6 @@ class MainWindow(QMainWindow):
         
         self.keyHandler = KeyHandler()
         self.settings = Settings()
-        self.physics = Physics()
         self.processSettingsChanged()
         
         # set MainWindow to center
@@ -33,7 +31,6 @@ class MainWindow(QMainWindow):
         self.getSettingValues()
         self.calculateCorScaleAndCorOffset()
         self.settings.setVariables(self.corScale)
-        self.physics.setupPhysics(self.fps)
     
     def getSettingValues(self):
         (self.width, self.height) = self.settings.getResolution()
