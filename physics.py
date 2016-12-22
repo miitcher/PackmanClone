@@ -12,32 +12,37 @@ CLOSING = 5
 
 
 class Movement():
+    """
+    Class used when moving pacman or ghosts.
+    """
     def __init__(self, fps):
         self.dt = 1 / fps # smallest time in physics
     
-    def pMove(self, x, y, direction, speed, movementMatrix):
-        change = self.dt * speed
-        if direction == LEFT:
-            return(x - change, y)
-        elif direction == RIGHT:
-            return(x + change, y)
-        elif direction == UP:
-            return(x, y - change)
-        elif direction == DOWN:
-            return(x, y + change)
+    def pMove(self):
+        """ movementMatrix
+        """
+        change = self.dt * self.speed
+        if self.direction == LEFT:
+            self.x -= change
+        elif self.direction == RIGHT:
+            self.x += change
+        elif self.direction == UP:
+            self.y -= change
+        elif self.direction == DOWN:
+            self.y += change
     
-    def pMoveMouth(self, angle, direction, angleSpeed, maxAngle):
-        if direction == OPENING:
-            newAngle = angle + self.dt * angleSpeed
-            if maxAngle < newAngle:
-                newAngle = angle
-                direction = CLOSING
-        elif direction == CLOSING:
-            newAngle = angle - self.dt * angleSpeed
+    def pMoveMouth(self):
+        if self.mouthMovementDirection == OPENING:
+            newAngle = self.halfAngleOfMouth + self.dt * self.mouthAngleSpeed
+            if self.maxHalfAngleOfMouth < newAngle:
+                self.mouthMovementDirection = CLOSING
+                return
+        elif self.mouthMovementDirection == CLOSING:
+            newAngle = self.halfAngleOfMouth - self.dt * self.mouthAngleSpeed
             if newAngle < 0:
-                newAngle = angle
-                direction = OPENING
-        return(newAngle, direction)
+                self.mouthMovementDirection = OPENING
+                return
+        self.halfAngleOfMouth = newAngle
 
 class Collision():
     """

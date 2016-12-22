@@ -79,6 +79,7 @@ class Pacman(Body, Movement):
     
     def setParameters(self):
         self.direction = RIGHT
+        self.nextDirection = None
         self.mouthMovementDirection = CLOSING
         self.halfAngleOfMouth = self.maxHalfAngleOfMouth
         self.firstAngle = self.maxHalfAngleOfMouth
@@ -86,7 +87,6 @@ class Pacman(Body, Movement):
         self.alive = True
         self.extraLives = 3
         self.moving = False
-        self.nextDirection = None
     
     def moveToStart(self):
         Body.moveToStart(self)
@@ -143,17 +143,11 @@ class Pacman(Body, Movement):
             self.moveMouth()
     
     def move(self):
-        [self.x, self.y] = self.pMove(self.x, self.y,
-                                      self.direction, self.speed,
-                                      self.movementMatrix)
+        self.pMove()
         self.setHitbox()
     
     def moveMouth(self):
-        [self.halfAngleOfMouth, self.mouthMovementDirection] = self.pMoveMouth(
-                                                                    self.halfAngleOfMouth,
-                                                                    self.mouthMovementDirection,
-                                                                    self.mouthAngleSpeed,
-                                                                    self.maxHalfAngleOfMouth)
+        self.pMoveMouth()
         self.firstAngle = self.baseAngle + self.halfAngleOfMouth
         self.spanAngle = 360 - 2*self.halfAngleOfMouth
 
