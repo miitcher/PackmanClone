@@ -88,7 +88,7 @@ class GameW(OwnW):
         """
         self.generateCoordinates()
         self.modifyCoordinateLists()
-        self.settings.movementNodeCors = self.movementNodeCors
+        self.settings.movementMatrix = self.movementMatrix
         self.createBodies()
         print("GameW set")
     
@@ -107,7 +107,28 @@ class GameW(OwnW):
         self.drawBodyList(self.ghostWallList, painter)
         self.drawBodyList(self.wallList, painter)
         
+        self.drawMowementMatrix(painter)
+        
         painter.end()
+    
+    def drawMowementMatrix(self, painter):
+        # For debug purposes.
+        painter.setPen(QPen())
+        k = self.movementMatrix[0][0]
+        x = len(self.movementMatrix)
+        y = len(self.movementMatrix[0])
+        size = k/4
+        (xOffset, yOffset) = self.settings.corOffset
+        for i in range(x):
+            for j in range(y):
+                value = self.movementMatrix[i][j]
+                if value in [1,2]:
+                    if value == 1:
+                        colour = Qt.green
+                    else:
+                        colour = Qt.gray
+                    painter.setBrush(colour)
+                    painter.drawRect(k*(i + xOffset), k*(j + yOffset), size, size)
     
     def drawBodyList(self, bodyList, painter):
         for b in bodyList:
@@ -121,9 +142,10 @@ class GameW(OwnW):
         self.ghostWallEdgeCors = self.generateGhostWallEdgeGCoordinateList()
         self.ballCors = self.generateBallGCoordinateList()
         self.powerupCors = [(1,3), (26,3), (1,23), (26,23)]
-        self.movementNodeCors = self.generateMovementNodeCoordinates()
+        self.movementMatrix = self.generateMovementMatrix()
     
-    def generateWallEdgeGCoordinateList(self):
+    @staticmethod
+    def generateWallEdgeGCoordinateList():
         """
         rows and columns start at count 0
         and increase to the right and down
@@ -199,7 +221,8 @@ class GameW(OwnW):
             l.append((i,23))
         return l
     
-    def generateGhostWallEdgeGCoordinateList(self):
+    @staticmethod
+    def generateGhostWallEdgeGCoordinateList():
         """
         rows and columns start at count 0
         and increase to the right and down
@@ -217,7 +240,8 @@ class GameW(OwnW):
             l.append((17,i))
         return l
     
-    def generateBallGCoordinateList(self):
+    @staticmethod
+    def generateBallGCoordinateList():
         """
         rows and columns start at count 0
         and increase to the right and down
@@ -273,18 +297,52 @@ class GameW(OwnW):
             l.append((i,28))
         return l
     
-    def generateMovementNodeCoordinates(self):
-        return([(1,1),(6,1),(12,1),(15,1),(21,1),(26,1),
-                 (1,5),(6,5),(9,5),(12,5),(15,5),(18,5),(21,5),(26,5),
-                 (1,8),(6,8),(9,8),(12,8),(15,8),(18,8),(21,8),(26,8),
-                 (9,11),(12,11),(13,11),(14,11),(15,11),(18,11),
-                 (-1,14),(6,14),(9,14),(11,14),(13,14),(14,14),
-                    (16,14),(18,14),(21,14),(28,14),
-                 (9,17),(18,17),
-                 (1,20),(6,20),(9,20),(12,20),(15,20),(18,20),(21,20),(26,20),
-                 (1,23),(3,23),(6,23),(9,23),(12,23),(15,23),(18,23),(21,23),(24,23),(26,23),
-                 (1,26),(3,26),(6,26),(9,26),(12,26),(15,26),(18,26),(21,26),(24,26),(26,26),
-                 (1,29),(12,29),(15,29),(26,29)])
+    def generateMovementMatrix(self):
+        """
+        The movementMatrix determine witch nodes can be moved trough.
+        You can move between two nodes if they are next to eachother
+        verticaly or horisontaly.
+        A node of value 1 is accessible to pacman and ghosts.
+        A node of value 2 is accessible to just ghosts.
+        A node of value 0 is not accessible.
+        The movementMatrix is accessed like: m[x][y]
+        The ranges are:
+            x: [0, 27], y: [0, 29]
+        The corScale is stored in m[0][0].
+        """
+        m = []
+        for x in range(28):
+            m.append([0] * 30)
+        m[0][0] = self.settings.corScale
+        
+        # We lists to set the movementMatrix.
+        self.placeValueInMatrixOnListCoordinates(1, m, self.ballCors)
+        self.placeValueInMatrixOnListCoordinates(1, m, self.powerupCors)
+        
+        emptyAccessibleCors = [(12,9),(15,9),(12,10),(15,10),(13,23),(14,23)]
+        for i in range(28):
+            if i not in [6,21] and i not in range(9,19):
+                emptyAccessibleCors.append((i,14))
+        for i in range(10,18):
+            emptyAccessibleCors.append((i,11))
+            emptyAccessibleCors.append((i,17))
+        for j in range(11,20):
+            emptyAccessibleCors.append((9,j))
+            emptyAccessibleCors.append((18,j))
+        self.placeValueInMatrixOnListCoordinates(1, m, emptyAccessibleCors)
+        
+        corsAccessibleToGhosts = [(13,12),(14,12)]
+        for i in range(11,17):
+            for j in range(13,16):
+                corsAccessibleToGhosts.append((i,j))
+        self.placeValueInMatrixOnListCoordinates(2, m, corsAccessibleToGhosts)
+        
+        return(m)
+    
+    @staticmethod
+    def placeValueInMatrixOnListCoordinates(value, matrix, corList):
+        for corTupple in corList:
+            matrix[corTupple[0]][corTupple[1]] = value
     
     
     def modifyCoordinateLists(self):
@@ -295,7 +353,6 @@ class GameW(OwnW):
         self.ghostWallEdgeCors = self.modifyTuppleList(self.ghostWallEdgeCors)
         self.ballCors          = self.modifyTuppleList(self.ballCors)
         self.powerupCors       = self.modifyTuppleList(self.powerupCors)
-        self.movementNodeCors  = self.modifyTuppleList(self.movementNodeCors)
     
     def modifyTuppleList(self, list):
         newList = []

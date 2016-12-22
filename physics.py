@@ -15,7 +15,7 @@ class Movement():
     def __init__(self, fps):
         self.dt = 1 / fps # smallest time in physics
     
-    def pMove(self, x, y, direction, speed):
+    def pMove(self, x, y, direction, speed, movementMatrix):
         change = self.dt * speed
         if direction == LEFT:
             return(x - change, y)

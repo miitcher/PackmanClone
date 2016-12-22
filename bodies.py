@@ -66,7 +66,7 @@ class Pacman(Body, Movement):
         [coordinateTupple, settings, keyHandler] = bodyInput
         Body.__init__(self, [coordinateTupple, settings])
         Movement.__init__(self, settings.fps)
-        self.movementNodeCors = settings.movementNodeCors
+        self.movementMatrix = settings.movementMatrix
         self.keyHandler = keyHandler
         self.colour = settings.PACMANCOLOUR
         self.speed = settings.PACMANSPEED
@@ -143,7 +143,9 @@ class Pacman(Body, Movement):
             self.moveMouth()
     
     def move(self):
-        [self.x, self.y] = self.pMove(self.x, self.y, self.direction, self.speed)
+        [self.x, self.y] = self.pMove(self.x, self.y,
+                                      self.direction, self.speed,
+                                      self.movementMatrix)
         self.setHitbox()
     
     def moveMouth(self):
@@ -160,7 +162,7 @@ class Ghost(Body, Movement):
         [coordinateTupple, settings] = bodyInput
         Body.__init__(self, bodyInput)
         Movement.__init__(self, settings.fps)
-        self.movementNodeCors = settings.movementNodeCors
+        self.movementMatrix = settings.movementMatrix
         self.ghostColourList = settings.GHOSTCOLOURLIST
         self.colour = Qt.green
         self.speed = settings.GHOSTSPEED
