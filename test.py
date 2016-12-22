@@ -118,7 +118,6 @@ class TestSettingsMethods(unittest.TestCase):
         """
         s = Settings()
         s.setDefaultSettings()
-        #print(s.otherSettingsDict)
         s.makeOtherSettingsAccessible()
         
         self.assertEqual((s.width,s.height), (1280,720))
@@ -135,13 +134,58 @@ class TestSettingsMethods(unittest.TestCase):
         s.makeOtherSettingsAccessible()
         menuScaleDefaultValue = 0.75
         self.assertEqual(s.menuScale, menuScaleDefaultValue)
+    
+    def test_calculateCorScaleAndCorOffset(self):
+        xLenGCor = 29
+        yLenGCor = 35
+        
+        s = Settings()
+        s.setDefaultSettings()
+        s.makeOtherSettingsAccessible()
+        s.calculateCorScaleAndCorOffset()
+        # y limits (default resolution: 1280x720
+        expectedCorScale = 720 / yLenGCor
+        expectedGameAreaSize = (expectedCorScale * xLenGCor,
+                            expectedCorScale * yLenGCor)
+        self.assertEqual(s.corScale, expectedCorScale)
+        self.assertEqual(s.gameAreaSize, expectedGameAreaSize)
+        
+        s.width = 700
+        s.height = 1000
+        s.calculateCorScaleAndCorOffset()
+        # x limits
+        expectedCorScale = 700 / xLenGCor
+        expectedGameAreaSize = (expectedCorScale * xLenGCor,
+                            expectedCorScale * yLenGCor)
+        self.assertEqual(s.corScale, expectedCorScale)
+        self.assertEqual(s.gameAreaSize, expectedGameAreaSize)
+    
+    def test_setVariables(self):
+        s = Settings()
+        k = 45
+        s.corScale = k
+        s.setVariables()
+        expectedPacmansize = k*2 -(4*k*0.1)
+        self.assertEqual(s.PACMANSIZE, expectedPacmansize)
+        expectedSlowGhostSpeed = k*10/2
+        self.assertEqual(s.SLOWGHOSTSPEED, expectedSlowGhostSpeed)
+        expectedGhostColourList = [Qt.red, Qt.cyan, QColor(255,192,203), QColor(255,165,0)]
+        self.assertEqual(s.GHOSTCOLOURLIST, expectedGhostColourList)
+        
+        k = 0.333
+        s.corScale = k
+        s.setVariables()
+        expectedWallThickness = k*0.1
+        self.assertEqual(s.WALLTHICKNESS, expectedWallThickness)
+        expectedPowerupSize = k*0.3*2.6
+        self.assertEqual(s.POWERUPSIZE, expectedPowerupSize)
 
 class TestBodies(unittest.TestCase):
     # bodies.py
     def test_Body(self):
         s = Settings()
         s.setDefaultSettings()
-        s.setVariables(1) # input is corScale
+        s.processSettingsChanged()
         
         x0 = 3
         y0 = 5

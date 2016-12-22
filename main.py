@@ -21,53 +21,9 @@ class MainWindow(QMainWindow):
         
         self.keyHandler = KeyHandler()
         self.settings = Settings()
-        self.processSettingsChanged()
         
         # set MainWindow to center
         self.toMenuW()
-    
-    def processSettingsChanged(self):
-        #Called when settings changed.
-        #self.getSettingValues()
-        self.calculateCorScaleAndCorOffset()
-        self.settings.setVariables(self.corScale)
-    """
-    def getSettingValues(self):
-        (self.width, self.height) = self.settings.getResolution()
-        self.fps = self.settings.getFPS()
-        self.menuScale = self.settings.getMenuScale()
-        self.windowMode = self.settings.getWindowMode()
-    """
-    def calculateCorScaleAndCorOffset(self):
-        """
-        "corScale" is the ratio between the pixel- and 
-        general coordinates (corScale = PixelCor / GeneralCor).
-        
-        The GeneralCor game-areas coordinate ranges are:
-            x: [0, 27], y: [0, 30]
-        We give extra space, in GeneralCor units:
-            right/left: 1, up: 3, down: 2
-        Extra spaces combined is:
-            horisontal: 2, vertical: 5
-        Now our GeneralCor side lenghts are:
-            x: 29, y: 35
-        The extra space up and left need buffers.
-        """
-        self.corOffset = (1,3)
-        xLenGCor = 29   # 27 + 2
-        yLenGCor = 35   # 30 + 5
-        xRatio = self.settings.width  / xLenGCor
-        yRatio = self.settings.height / yLenGCor
-        # We determine the conversion between GCor
-        # and PCor with the limiting length.
-        if xRatio > yRatio:
-            # height (y) limits
-            self.corScale = yRatio
-        else:
-            # width (x) limits
-            self.corScale = xRatio
-        
-        self.gameAreaSize = (self.corScale * xLenGCor, self.corScale * yLenGCor)
     
     def keyPressEvent(self, e):
         if e.isAutoRepeat():
@@ -88,11 +44,12 @@ class MainWindow(QMainWindow):
         self.GameW = GameW(self)
         self.GameW.setupWidget()
         if self.settings.windowMode == "Fullscreen":
-            self.resize(self.width, self.height)
+            self.resize(self.settings.width, self.settings.height)
             # should be real fullscreen
             # self.MWindow.windowMode
         elif self.settings.windowMode == "Windowed":
-            self.resize(self.gameAreaSize[0], self.gameAreaSize[1])
+            self.resize(self.settings.gameAreaSize[0],
+                        self.settings.gameAreaSize[1])
         self.setCentralWidget(self.GameW)
         self.GameW.startGame()
     

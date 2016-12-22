@@ -23,6 +23,7 @@ class OwnW(QWidget):
     def __init__(self, MWindow):
         super().__init__()
         self.MWindow = MWindow
+        self.settings = MWindow.settings
         self.setAutoFillBackground(True)
         p = self.palette()
         p.setColor(self.backgroundRole(), Qt.black)
@@ -298,8 +299,8 @@ class GameW(OwnW):
     
     def modifyTuppleList(self, list):
         newList = []
-        [xOffset, yOffset] = self.MWindow.corOffset
-        k = self.MWindow.corScale
+        [xOffset, yOffset] = self.settings.corOffset
+        k = self.settings.corScale
         for tupple in list:
             # The buffers are; x:1, y:3
             newList.append(( k * (xOffset + tupple[0]),

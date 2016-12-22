@@ -36,7 +36,7 @@ class Settings():
             self.getSettingsFromFile()
         except FileNotFoundError:
             self.setDefaultSettings()
-        self.makeOtherSettingsAccessible()
+        self.processSettingsChanged()
     
     def __str__(self):
         s = "\tSETTINGS\nKEYS"
@@ -46,37 +46,6 @@ class Settings():
         for i in self.otherSettingsDict:
             s += "\n" + i + ":\t" + str(self.otherSettingsDict[i])
         return s
-    
-    def setVariables(self, corScale):
-        """
-        Needs to be called if you want to access
-        the variables.
-        """
-        k = corScale
-        # Relative sizes [k * GCor]
-        self.WALLTHICKNESS   = k * 0.1
-        self.WALLLENGTH      = k * 1
-        self.PACMANSIZE      = k * 2 - (4 * self.WALLTHICKNESS)
-        self.GHOSTSIZE       = self.PACMANSIZE
-        self.BALLSIZE        = k * 0.3
-        self.POWERUPSIZE     = self.BALLSIZE * 2.6
-        self.FRUITSIZE       = self.POWERUPSIZE
-        # Angle [degrees]
-        self.PACMANMAXMOUTHANGLE = 100
-        # Angle speed [degrees/s]
-        self.PACMANMOUTHANGLESPEED    = self.PACMANMAXMOUTHANGLE * 10
-        # Speeds [k * GCor/s]
-        self.PACMANSPEED     = k * 10
-        self.GHOSTSPEED      = self.PACMANSPEED
-        self.SLOWGHOSTSPEED  = self.GHOSTSPEED/2
-        # Colours
-        self.WALLCOLOUR      = Qt.blue
-        self.PACMANCOLOUR    = Qt.yellow
-        self.GHOSTCOLOURLIST = [Qt.red, Qt.cyan, QColor(255,192,203), QColor(255,165,0)]
-                                # red, cyan, pink, orange
-        self.BALLCOLOUR      = QColor(255,204,153)
-        self.POWERUPCOLOUR   = self.BALLCOLOUR
-        self.FRUITCOLOUR     = Qt.red
     
     def getSettingsFromFile(self):
         self.keySettingsDict = {}
@@ -183,6 +152,12 @@ class Settings():
                     return(i)
         return None
     
+    def processSettingsChanged(self):
+        #Called when settings changed.
+        self.makeOtherSettingsAccessible()
+        self.calculateCorScaleAndCorOffset()
+        self.setVariables()
+    
     def makeOtherSettingsAccessible(self):
         """
         Needs to be called if you want to access
@@ -227,3 +202,66 @@ class Settings():
                     s += ", "
             s += ' could not be read, so default settings are used.\tFix problem by deleting "settings.ini"-file.'
             self.minorProblems.append(s)
+    
+    def calculateCorScaleAndCorOffset(self):
+        """
+        "corScale" is the ratio between the pixel- and 
+        general coordinates (corScale = PixelCor / GeneralCor).
+        
+        The GeneralCor game-areas coordinate ranges are:
+            x: [0, 27], y: [0, 30]
+        We give extra space, in GeneralCor units:
+            right/left: 1, up: 3, down: 2
+        Extra spaces combined is:
+            horisontal: 2, vertical: 5
+        Now our GeneralCor side lenghts are:
+            x: 29, y: 35
+        The extra space up and left need buffers.
+        """
+        self.corOffset = (1,3)
+        xLenGCor = 29   # 27 + 2
+        yLenGCor = 35   # 30 + 5
+        xRatio = self.width  / xLenGCor
+        yRatio = self.height / yLenGCor
+        # We determine the conversion between GCor
+        # and PCor with the limiting length.
+        if xRatio > yRatio:
+            # height (y) limits
+            self.corScale = yRatio
+        else:
+            # width (x) limits
+            self.corScale = xRatio
+        
+        self.gameAreaSize = (self.corScale * xLenGCor,
+                             self.corScale * yLenGCor)
+    
+    def setVariables(self):
+        """
+        Needs to be called if you want to access
+        the variables.
+        """
+        k = self.corScale
+        # Relative sizes [k * GCor]
+        self.WALLTHICKNESS   = k * 0.1
+        self.WALLLENGTH      = k * 1
+        self.PACMANSIZE      = k * 2 - (4 * self.WALLTHICKNESS)
+        self.GHOSTSIZE       = self.PACMANSIZE
+        self.BALLSIZE        = k * 0.3
+        self.POWERUPSIZE     = self.BALLSIZE * 2.6
+        self.FRUITSIZE       = self.POWERUPSIZE
+        # Angle [degrees]
+        self.PACMANMAXMOUTHANGLE = 100
+        # Angle speed [degrees/s]
+        self.PACMANMOUTHANGLESPEED    = self.PACMANMAXMOUTHANGLE * 10
+        # Speeds [k * GCor/s]
+        self.PACMANSPEED     = k * 10
+        self.GHOSTSPEED      = self.PACMANSPEED
+        self.SLOWGHOSTSPEED  = self.GHOSTSPEED/2
+        # Colours
+        self.WALLCOLOUR      = Qt.blue
+        self.PACMANCOLOUR    = Qt.yellow
+        self.GHOSTCOLOURLIST = [Qt.red, Qt.cyan, QColor(255,192,203), QColor(255,165,0)]
+                                # red, cyan, pink, orange
+        self.BALLCOLOUR      = QColor(255,204,153)
+        self.POWERUPCOLOUR   = self.BALLCOLOUR
+        self.FRUITCOLOUR     = Qt.red
