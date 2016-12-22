@@ -64,6 +64,7 @@ class MenuW(OwnW):
 class GameW(OwnW):
     def __init__(self, MWindow):
         super().__init__(MWindow)
+        self.keyHandler = MWindow.keyHandler
     
     def __str__(self):
         return "GameW"
@@ -71,7 +72,7 @@ class GameW(OwnW):
     def startGame(self):
         self.timer = QTimer()
         self.timer.timeout.connect(self.timerEvent)
-        self.timer.start(1000/self.MWindow.settings.fps) # [ms]
+        self.timer.start(1000/self.settings.fps) # [ms]
     
     def timerEvent(self):
         self.pacmanList[0].processPressedKey()
@@ -87,7 +88,7 @@ class GameW(OwnW):
         """
         self.generateCoordinates()
         self.modifyCoordinateLists()
-        self.MWindow.settings.movementNodeCors = self.movementNodeCors
+        self.settings.movementNodeCors = self.movementNodeCors
         self.createBodies()
         print("GameW set")
     
@@ -97,7 +98,6 @@ class GameW(OwnW):
     def paintEvent(self, e):
         painter = QPainter()
         painter.begin(self)
-        #painter.scale(self.MWindow.CorScale, self.MWindow.CorScale)
         
         self.drawBodyList(self.fruitList, painter)
         self.drawBodyList(self.powerupList, painter)
@@ -324,9 +324,9 @@ class GameW(OwnW):
     def createBodyListFromCorList(self, BodyClass, CorList):
         list = []
         for cor in CorList:
-            bodyInput = [cor, self.MWindow.settings]
+            bodyInput = [cor, self.settings]
             if BodyClass == "Pacman":
-                bodyInput = [cor, self.MWindow.settings, self.MWindow.keyHandler]
+                bodyInput = [cor, self.settings, self.keyHandler]
                 list.append(Pacman(bodyInput))
             elif BodyClass == "Fruit":
                 list.append(Fruit(bodyInput))
