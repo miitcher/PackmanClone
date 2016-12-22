@@ -65,13 +65,13 @@ class Pacman(Body, Movement):
     def __init__(self, bodyInput):
         [coordinateTupple, settings, keyHandler] = bodyInput
         Body.__init__(self, [coordinateTupple, settings])
-        Movement.__init__(self, settings.fps)
-        self.movementMatrix = settings.movementMatrix
+        Movement.__init__(self, settings, [1])
         self.keyHandler = keyHandler
         self.colour = settings.PACMANCOLOUR
         self.speed = settings.PACMANSPEED
         self.mouthAngleSpeed = settings.PACMANMOUTHANGLESPEED
         self.setParameters()
+        self.setMovement()
     
     def setSize(self, settings):
         self.size = settings.PACMANSIZE
@@ -140,7 +140,8 @@ class Pacman(Body, Movement):
             self.keyHandler.pressedKey = None
         if self.moving:
             self.move()
-            self.moveMouth()
+            if self.moving:
+                self.moveMouth()
     
     def move(self):
         self.pMove()
@@ -155,8 +156,7 @@ class Ghost(Body, Movement):
     def __init__(self, bodyInput):
         [coordinateTupple, settings] = bodyInput
         Body.__init__(self, bodyInput)
-        Movement.__init__(self, settings.fps)
-        self.movementMatrix = settings.movementMatrix
+        Movement.__init__(self, settings, [1,2])
         self.ghostColourList = settings.GHOSTCOLOURLIST
         self.colour = Qt.green
         self.speed = settings.GHOSTSPEED

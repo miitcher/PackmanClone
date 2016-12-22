@@ -114,11 +114,11 @@ class GameW(OwnW):
     def drawMowementMatrix(self, painter):
         # For debug purposes.
         painter.setPen(QPen())
-        k = self.movementMatrix[0][0]
+        k = self.settings.corScale
+        (xOffset, yOffset) = self.settings.corOffset
         x = len(self.movementMatrix)
         y = len(self.movementMatrix[0])
         size = k/4
-        (xOffset, yOffset) = self.settings.corOffset
         for i in range(x):
             for j in range(y):
                 value = self.movementMatrix[i][j]
@@ -308,12 +308,13 @@ class GameW(OwnW):
         The movementMatrix is accessed like: m[x][y]
         The ranges are:
             x: [0, 27], y: [0, 29]
-        The corScale is stored in m[0][0].
+        We need buffers on the right and the bottom of
+        the game area, therefore we add one node to
+        the x and y lengths.
         """
         m = []
-        for x in range(28):
-            m.append([0] * 30)
-        m[0][0] = self.settings.corScale
+        for x in range(29):
+            m.append([0] * 31)
         
         # We lists to set the movementMatrix.
         self.placeValueInMatrixOnListCoordinates(1, m, self.ballCors)
