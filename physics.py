@@ -3,9 +3,9 @@
 """
 
 # Directions
-LEFT  = 0
-RIGHT = 1
-UP    = 2
+LEFT  = 2
+RIGHT = 0
+UP    = 1
 DOWN  = 3
 OPENING = 4
 CLOSING = 5
@@ -31,45 +31,83 @@ class Movement():
         y0 = ((self.y + self.size/2)/self.corScale - self.corOffset[1])
         xD = abs(x0-round(x0))
         yD = abs(y0-round(y0))
-        """
-        Variables above could be moved into where they are used so
-        for example when dir is left, you don't need to calculate xD.
-        Do this later, when the whole method works properly.
         
+        if self.direction == LEFT:
+            if yD < 0.001 and (xD > 0.001 or self.movementMatrix[round(x0)-1][round(y0)] in self.accessibleNodesList):
+                self.x -= self.dLen
+            else:
+                self.moving = False
+        elif self.direction == RIGHT:
+            if yD < 0.001 and (xD > 0.001 or self.movementMatrix[round(x0)+1][round(y0)] in self.accessibleNodesList):
+                self.x += self.dLen
+            else:
+                self.moving = False
+        elif self.direction == UP:
+            if xD < 0.001 and (yD > 0.001 or self.movementMatrix[round(x0)][round(y0)-1] in self.accessibleNodesList):
+                self.y -= self.dLen
+            else:
+                self.moving = False
+        elif self.direction == DOWN:
+            if xD < 0.001 and (yD > 0.001 or self.movementMatrix[round(x0)][round(y0)+1] in self.accessibleNodesList):
+                self.y += self.dLen
+            else:
+                self.moving = False
+    
+    def pChangeDirection(self, newDirection):
+        if self.previousDirection == None:
+            if newDirection in [UP, DOWN]:
+                return
+        self.moving = True
+        self.previousDirection = self.direction
+        """
+        self.direction = newDirection
+        return
+        """
+        
+        x0 = ((self.x + self.size/2)/self.corScale - self.corOffset[0])
+        y0 = ((self.y + self.size/2)/self.corScale - self.corOffset[1])
+        xD = abs(x0-round(x0))
+        yD = abs(y0-round(y0))
+        """
         The threshold 0.001 could be determined assording to the
         resolution if needed. Check if it is needed.
+        
         self.dLen should propably also depend on the resolution.
             If dLen is a weird size, mayby pacman can get stuck.
             Instead of choosing the dLen, you could move pacman/ghost
             when needed so it don't get stuck.
-        
-        Separate the current direction and the direction the key indicates.
         """
-        
-        if self.direction == LEFT:
-            if yD < 0.001:
-                if xD > 0.001 or self.movementMatrix[round(x0)-1][round(y0)] in self.accessibleNodesList:
-                    self.x -= self.dLen
-                else:
-                    self.moving = False
-            else:
-                self.moving = False
-        elif self.direction == RIGHT:
-            if yD < 0.001:
-                if xD > 0.001 or self.movementMatrix[round(x0)+1][round(y0)] in self.accessibleNodesList:
-                    self.x += self.dLen
-        elif self.direction == UP:
-            if xD < 0.001:
-                if yD > 0.001 or self.movementMatrix[round(x0)][round(y0)-1] in self.accessibleNodesList:
-                    self.y -= self.dLen
-        elif self.direction == DOWN:
-            if xD < 0.001:
-                if yD > 0.001 or self.movementMatrix[round(x0)][round(y0)+1] in self.accessibleNodesList:
-                    self.y += self.dLen
-        
+        """
         if self.moving:
             print("\nPacman GCor: ",x0,y0)
             print("xD & yD: ",xD,yD)
+        """
+        
+        """
+        Next thing: add the "buffer-turning" on other places than
+        where pacman meets a wall.
+        """
+        
+        if newDirection == LEFT:
+            if yD < 0.001 and (xD > 0.001 or self.movementMatrix[round(x0)-1][round(y0)] in self.accessibleNodesList):
+                self.direction = newDirection
+            else:
+                self.nextDirection = newDirection
+        elif newDirection == RIGHT:
+            if yD < 0.001 and (xD > 0.001 or self.movementMatrix[round(x0)+1][round(y0)] in self.accessibleNodesList):
+                self.direction = newDirection
+            else:
+                self.nextDirection = newDirection
+        elif newDirection == UP:
+            if xD < 0.001 and (yD > 0.001 or self.movementMatrix[round(x0)][round(y0)-1] in self.accessibleNodesList):
+                self.direction = newDirection
+            else:
+                self.nextDirection = newDirection
+        elif newDirection == DOWN:
+            if xD < 0.001 and (yD > 0.001 or self.movementMatrix[round(x0)][round(y0)+1] in self.accessibleNodesList):
+                self.direction = newDirection
+            else:
+                self.nextDirection = newDirection
     
     def pMoveMouth(self):
         if self.mouthMovementDirection == OPENING:

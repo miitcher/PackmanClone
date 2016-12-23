@@ -10,9 +10,9 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 
 # Directions
-LEFT  = 0
-RIGHT = 1
-UP    = 2
+LEFT  = 2
+RIGHT = 0
+UP    = 1
 DOWN  = 3
 OPENING = 4
 CLOSING = 5
@@ -78,12 +78,14 @@ class Pacman(Body, Movement):
         self.maxHalfAngleOfMouth = settings.PACMANMAXMOUTHANGLE / 2
     
     def setParameters(self):
+        self.previousDirection = None
         self.direction = RIGHT
         self.nextDirection = None
         self.mouthMovementDirection = CLOSING
         self.halfAngleOfMouth = self.maxHalfAngleOfMouth
         self.firstAngle = self.maxHalfAngleOfMouth
         self.spanAngle = 360 - 2*self.maxHalfAngleOfMouth
+        self.baseAngle = 0
         self.alive = True
         self.extraLives = 3
         self.moving = False
@@ -120,36 +122,35 @@ class Pacman(Body, Movement):
     def processPressedKey(self):
         pKey = self.keyHandler.pressedKey
         if self.alive and pKey:
-            #print(pKey,"pressed")
             if pKey in self.MoveLeft:
-                self.moving = True
-                self.direction = LEFT
-                self.baseAngle = 180
+                self.pChangeDirection(LEFT)
             elif pKey in self.MoveRight:
-                self.moving = True
-                self.direction = RIGHT
-                self.baseAngle = 0
+                self.pChangeDirection(RIGHT)
             elif pKey in self.MoveUp:
-                self.moving = True
-                self.direction = UP
-                self.baseAngle = 90
+                self.pChangeDirection(UP)
             elif pKey in self.MoveDown:
-                self.moving = True
-                self.direction = DOWN
-                self.baseAngle = -90
+                self.pChangeDirection(DOWN)
             self.keyHandler.pressedKey = None
         if self.moving:
             self.move()
-            if self.moving:
-                self.moveMouth()
+            if self.nextDirection != None:
+                print("nextDirection: ",self.nextDirection)
+        else:
+            if self.nextDirection != None:
+                self.direction = self.nextDirection
+                self.nextDirection = None
+                self.moving = True
+                self.move()
     
     def move(self):
         self.pMove()
         self.setHitbox()
+        if self.moving:
+            self.moveMouth()
     
     def moveMouth(self):
         self.pMoveMouth()
-        self.firstAngle = self.baseAngle + self.halfAngleOfMouth
+        self.firstAngle = 90*self.direction + self.halfAngleOfMouth
         self.spanAngle = 360 - 2*self.halfAngleOfMouth
 
 class Ghost(Body, Movement):
