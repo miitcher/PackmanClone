@@ -75,7 +75,7 @@ class GameW(OwnW):
         self.timer.start(1000/self.settings.fps) # [ms]
     
     def timerEvent(self):
-        self.pacmanList[0].processPressedKey()
+        self.pacmanList[0].process()
         self.update()
     
     def setupWidget(self):

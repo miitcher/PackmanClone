@@ -175,7 +175,14 @@ class Settings():
             self.height = 720
         # FPS
         try:
-            self.fps = int(self.otherSettingsDict["FPS"][0])
+            rawFps = int(self.otherSettingsDict["FPS"][0])
+            # Check that fps is a multiple of 20
+            if rawFps < 1:
+                self.fps = 60
+            elif rawFps%20 == 0:
+                self.fps = rawFps
+            else:
+                self.fps = max(20 * round(rawFps/20), 20)
         except Exception:
             settingsNotReadList.append("FPS")
             self.fps = 60

@@ -125,10 +125,9 @@ class TestSettingsMethods(unittest.TestCase):
         self.assertEqual(s.menuScale, 0.75)
         self.assertEqual(s.windowMode, "Windowed")
         # changing FPS to real value
-        FPSValue = 144
-        s.otherSettingsDict["FPS"] = [str(FPSValue)]
+        s.otherSettingsDict["FPS"] = [str(144)]
         s.makeOtherSettingsAccessible()
-        self.assertEqual(s.fps, FPSValue)
+        self.assertEqual(s.fps, 140)
         # changing MenuScale to wrong value
         s.otherSettingsDict["MenuScale"] = []
         s.makeOtherSettingsAccessible()

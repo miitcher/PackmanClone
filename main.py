@@ -5,6 +5,18 @@
     
     Python 3.4
     PySide #
+    
+    TODO:
+        Write more tests.
+        Make better drawn walls.
+        Make better ghost drawing (propably static images).
+        Implement ghost AI (could be just random).
+        Implement collision detection.
+        
+        Implement highscores.
+        Implement settings menu.
+        Add sounds.
+        Work on menus.
 """
 
 from graphics import *

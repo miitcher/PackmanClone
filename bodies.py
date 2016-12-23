@@ -78,7 +78,7 @@ class Pacman(Body, Movement):
         self.maxHalfAngleOfMouth = settings.PACMANMAXMOUTHANGLE / 2
     
     def setParameters(self):
-        self.previousDirection = None
+        self.atBeginning = True
         self.direction = RIGHT
         self.nextDirection = None
         self.mouthMovementDirection = CLOSING
@@ -119,7 +119,7 @@ class Pacman(Body, Movement):
         painter.setBrush(self.colour)
         painter.drawPie(self.x, self.y, self.size, self.size, 16*self.firstAngle, 16*self.spanAngle)
     
-    def processPressedKey(self):
+    def process(self):
         pKey = self.keyHandler.pressedKey
         if self.alive and pKey:
             if pKey in self.MoveLeft:
@@ -132,15 +132,8 @@ class Pacman(Body, Movement):
                 self.pChangeDirection(DOWN)
             self.keyHandler.pressedKey = None
         if self.moving:
+            self.pChangeDirection(self.nextDirection)
             self.move()
-            if self.nextDirection != None:
-                print("nextDirection: ",self.nextDirection)
-        else:
-            if self.nextDirection != None:
-                self.direction = self.nextDirection
-                self.nextDirection = None
-                self.moving = True
-                self.move()
     
     def move(self):
         self.pMove()

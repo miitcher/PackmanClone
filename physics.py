@@ -13,7 +13,35 @@ CLOSING = 5
 
 class Movement():
     """
-    Class used when moving pacman or ghosts.
+    Evaluating movement.
+    
+    self.dLen = self.dt * self.speed
+    self.dt = 1 / settings.fps
+    self.PACMANSPEED = self.corScale * gCorSpeed
+    Default: gCorSpeed = 10
+             fps = 60
+    
+    dLen0   = dLen / corScale
+            = dt * speed / corScale
+            = (1/fps) * speed / corScale
+            = (1/fps) * (corScale * gCorSpeed) / corScale
+            = (1/fps) * gCorSpeed
+            = gCorSpeed/fps
+    The dLen0 only depends on the gCorSpeed and the fps.
+    Pacman and ghosts start at gCoordinates of whole or half numbers.
+    Therefore dLen0 must be 0.5/k, where k=[1,2,3,4,...]
+    so the moving pacman or ghosts don't go outside the
+    movementMatrix coordinates.
+    We determine the fps:
+    dLen0 = gCorSpeed/fps = 0.5/k , k=[1,2,3,4,...]
+    --> fps = 2 * k * gCorSpeed
+    If gCorSpeed = 10:
+        fps = 20 * k , k=[1,2,3,4,...]
+    We add the check of the fps, and correct it to the lower
+    accepted fps-value.
+    
+    The threshold 0.001 is acceptable when we have choosen
+    the suitable fps. It's used against rounding errors.
     """
     def __init__(self, settings, accessibleNodesList):
         self.dt = 1 / settings.fps # smallest time
@@ -54,58 +82,40 @@ class Movement():
                 self.moving = False
     
     def pChangeDirection(self, newDirection):
-        if self.previousDirection == None:
-            if newDirection in [UP, DOWN]:
-                return
+        if self.atBeginning:
+            typeStr = str(type(self))
+            if typeStr == "<class 'bodies.Pacman'>":
+                if newDirection in [UP, DOWN]:
+                    return
+                else:
+                    self.atBeginning = False
         self.moving = True
-        self.previousDirection = self.direction
-        """
-        self.direction = newDirection
-        return
-        """
-        
         x0 = ((self.x + self.size/2)/self.corScale - self.corOffset[0])
         y0 = ((self.y + self.size/2)/self.corScale - self.corOffset[1])
         xD = abs(x0-round(x0))
         yD = abs(y0-round(y0))
-        """
-        The threshold 0.001 could be determined assording to the
-        resolution if needed. Check if it is needed.
-        
-        self.dLen should propably also depend on the resolution.
-            If dLen is a weird size, mayby pacman can get stuck.
-            Instead of choosing the dLen, you could move pacman/ghost
-            when needed so it don't get stuck.
-        """
-        """
-        if self.moving:
-            print("\nPacman GCor: ",x0,y0)
-            print("xD & yD: ",xD,yD)
-        """
-        
-        """
-        Next thing: add the "buffer-turning" on other places than
-        where pacman meets a wall.
-        """
-        
         if newDirection == LEFT:
             if yD < 0.001 and (xD > 0.001 or self.movementMatrix[round(x0)-1][round(y0)] in self.accessibleNodesList):
                 self.direction = newDirection
+                self.nextDirection = None
             else:
                 self.nextDirection = newDirection
         elif newDirection == RIGHT:
             if yD < 0.001 and (xD > 0.001 or self.movementMatrix[round(x0)+1][round(y0)] in self.accessibleNodesList):
                 self.direction = newDirection
+                self.nextDirection = None
             else:
                 self.nextDirection = newDirection
         elif newDirection == UP:
             if xD < 0.001 and (yD > 0.001 or self.movementMatrix[round(x0)][round(y0)-1] in self.accessibleNodesList):
                 self.direction = newDirection
+                self.nextDirection = None
             else:
                 self.nextDirection = newDirection
         elif newDirection == DOWN:
             if xD < 0.001 and (yD > 0.001 or self.movementMatrix[round(x0)][round(y0)+1] in self.accessibleNodesList):
                 self.direction = newDirection
+                self.nextDirection = None
             else:
                 self.nextDirection = newDirection
     
