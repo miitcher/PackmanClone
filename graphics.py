@@ -70,6 +70,8 @@ class GameW(OwnW):
         return "GameW"
     
     def startGame(self):
+        self.backImage = QPixmap("misc/game_backgroung.png")
+        
         self.timer = QTimer()
         self.timer.timeout.connect(self.timerEventFPS)
         self.timer.start(1000/self.settings.fps) # [ms]
@@ -106,6 +108,9 @@ class GameW(OwnW):
     def paintEvent(self, e):
         painter = QPainter()
         painter.begin(self)
+        
+        painter.drawPixmap(0,0,self.settings.gameAreaSize[0],
+                           self.settings.gameAreaSize[1], self.backImage)
         
         self.drawBodyList(self.fruitList, painter)
         self.drawBodyList(self.powerupList, painter)

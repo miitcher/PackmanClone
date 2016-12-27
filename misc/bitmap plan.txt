@@ -1,0 +1,20 @@
+coordinaat rangen är 29 x 35
+buffers:
+	up: 3
+	nere: 2
+	vänster/höger: 1
+
+wallthickness är 0.1
+	vi tar då *10 så wallthickness blir 1 och coordinates 290x350
+
+model_background range är 28*10 x 33*10
+
+
+-------------
+en koordinats pixlar: 50
+	för 1440p:	41.142857142857146
+	för 1080p:	30.857142857142858
+	för 720p:	20.571428571428573
+
+pixmappens range är då 50 gånnger 29 x 35: 1450 x 1750
+

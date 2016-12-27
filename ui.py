@@ -247,6 +247,7 @@ class Settings():
         the variables.
         """
         k = self.corScale
+        print(k)
         # Relative sizes [k * GCor]
         self.WALLTHICKNESS   = k * 0.1
         self.WALLLENGTH      = k * 1
