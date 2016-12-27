@@ -71,12 +71,20 @@ class GameW(OwnW):
     
     def startGame(self):
         self.timer = QTimer()
-        self.timer.timeout.connect(self.timerEvent)
+        self.timer.timeout.connect(self.timerEventFPS)
         self.timer.start(1000/self.settings.fps) # [ms]
+        
+        self.timerG = QTimer()
+        self.timerG.timeout.connect(self.timerEventGFPS)
+        self.timerG.start(1000/self.settings.gfps) # [ms]
+        
+        print("fps & gfps:",self.settings.fps, self.settings.gfps)
     
-    def timerEvent(self):
-        self.pacmanList[0].process()
+    def timerEventFPS(self):
         self.update()
+    
+    def timerEventGFPS(self):
+        self.pacmanList[0].process()
     
     def setupWidget(self):
         """
@@ -104,10 +112,12 @@ class GameW(OwnW):
         self.drawBodyList(self.ballList, painter)
         self.drawBodyList(self.ghostList, painter)
         self.drawBodyList(self.pacmanList, painter)
+        
+        # remove wall items (they slow things down
         self.drawBodyList(self.ghostWallList, painter)
         self.drawBodyList(self.wallList, painter)
         
-        self.drawMowementMatrix(painter)
+        #self.drawMowementMatrix(painter) # Debug
         
         painter.end()
     

@@ -173,19 +173,18 @@ class Settings():
             settingsNotReadList.append("Resolution")
             self.width = 1280
             self.height = 720
-        # FPS
+        # FPS & GFPS (Graphical frames per second)
         try:
             rawFps = int(self.otherSettingsDict["FPS"][0])
-            # Check that fps is a multiple of 20
-            if rawFps < 1:
+            if rawFps < 20:
                 self.fps = 60
-            elif rawFps%20 == 0:
-                self.fps = rawFps
             else:
-                self.fps = max(20 * round(rawFps/20), 20)
+                self.fps = rawFps
+            self.gfps = 20 * ( 1 + round(self.fps/20) )
         except Exception:
             settingsNotReadList.append("FPS")
             self.fps = 60
+            self.gfps = self.fps + 20
         # MenuScale
         try:
             self.menuScale = float(self.otherSettingsDict["MenuScale"][0])

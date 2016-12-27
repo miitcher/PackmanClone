@@ -44,7 +44,7 @@ class Movement():
     the suitable fps. It's used against rounding errors.
     """
     def __init__(self, settings, accessibleNodesList):
-        self.dt = 1 / settings.fps # smallest time
+        self.dt = 1 / settings.gfps # smallest time
         self.corScale = settings.corScale
         self.corOffset = settings.corOffset
         self.movementMatrix = settings.movementMatrix
