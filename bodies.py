@@ -165,7 +165,6 @@ class Ghost(Body, Movement, GhostAI):
         self.size = settings.GHOSTSIZE
     
     def setParameters(self):
-        self.free = False
         self.chasing = True
     
     def setGhostIndex(self, ghostIndex):
@@ -180,12 +179,15 @@ class Ghost(Body, Movement, GhostAI):
         if self.ghostIndex == 0:
             self.direction = LEFT
             self.free = True
-        elif self.ghostIndex in [1,3]:
+        elif self.ghostIndex == 1:
             self.direction = UP
             self.free = False
         elif self.ghostIndex == 2:
-            self.free = False
             self.direction = DOWN
+            self.free = True
+        elif self.ghostIndex == 3:
+            self.direction = DOWN
+            self.free = False
     
     def draw(self, painter):
         Body.draw(self, painter)

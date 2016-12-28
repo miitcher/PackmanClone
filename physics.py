@@ -154,12 +154,10 @@ class GhostAI():
         self.moving = True
     
     def AIProcess(self):
-        if not self.free:
-            return
-        
         if self.moving:
             self.pMove()
-            self.checkIntersection()
+            if self.free:
+                self.checkIntersection()
         else:
             self.newDirection()
     
@@ -167,7 +165,9 @@ class GhostAI():
         upDownList = [UP, DOWN]
         leftRightList = [LEFT, RIGHT]
         possibleDirections = self.possibleDirections()
-        if self.direction in leftRightList:
+        if len(possibleDirections) == 1:
+            newDirection = possibleDirections[0]
+        elif self.direction in leftRightList:
             newDirection = choice(upDownList)
             while newDirection not in possibleDirections:
                 newDirection = choice(upDownList)

@@ -31,8 +31,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Packman Clone")
         
-        self.keyHandler = KeyHandler()
         self.settings = Settings()
+        self.keyHandler = KeyHandler(self)
         
         # set MainWindow to center
         self.toMenuW()

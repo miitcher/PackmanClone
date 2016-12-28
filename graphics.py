@@ -66,6 +66,7 @@ class GameW(OwnW):
         super().__init__(MWindow)
         self.keyHandler = MWindow.keyHandler
         self.backgroundImage = QPixmap("files/game_backgroung.png")
+        self.paused = False
     
     def __str__(self):
         return "GameW"
@@ -79,10 +80,22 @@ class GameW(OwnW):
         self.timerGame.timeout.connect(self.timerEventGameFPS)
         self.timerGame.start(1000/self.settings.gfps) # [ms]
         
-        self.nextGhostToSpawn = 1 # first ghost is already free
         self.timerGhost = QTimer()
         self.timerGhost.timeout.connect(self.timerEventGhost)
         self.timerGhost.start(1000*self.settings.ghostSpawnIntervall)
+    
+    def pauseOrUnpauseGame(self):
+        # pauses or unpauses the timers
+        if self.paused:
+            self.timerFPS.start()
+            self.timerGame.start()
+            self.timerGhost.start()
+            self.paused = False
+        else:
+            self.timerFPS.stop()
+            self.timerGame.stop()
+            self.timerGhost.stop()
+            self.paused = True
     
     def timerEventFPS(self):
         self.update()
@@ -93,9 +106,12 @@ class GameW(OwnW):
             ghost.process()
     
     def timerEventGhost(self):
-        self.ghostList[self.nextGhostToSpawn].free = True
-        self.nextGhostToSpawn += 1
-        if self.nextGhostToSpawn == 4:
+        gl = self.ghostList
+        if not gl[1].free:
+            gl[1].free = True
+        elif not gl[3].free:
+            gl[3].free = True
+        else:
             self.timerGhost.stop()
     
     def setupWidget(self):
@@ -128,10 +144,10 @@ class GameW(OwnW):
         self.drawBodyList(self.ballList, painter)
         self.drawBodyList(self.ghostList, painter)
         self.drawBodyList(self.pacmanList, painter)
-        
+        """
         self.drawGhostIntersections(painter) # Debug
         self.drawMowementMatrix(painter) # Debug
-        
+        """
         painter.end()
     
     def drawGhostIntersections(self, painter):
@@ -170,7 +186,7 @@ class GameW(OwnW):
     def generateCoordinates(self):
         self.pacmanCor = [(13.5,23)]
         self.fruitCor = [(13.5,17)]
-        self.ghostCors = [(13.5,11),(11.5,14),(13.5,14),(15.5,14)]
+        self.ghostCors = [(13.5,11),(12,14),(14,14),(16,14)]
         self.ballCors = self.generateBallGCoordinateList()
         self.powerupCors = [(1,3), (26,3), (1,23), (26,23)]
         self.movementMatrix = self.generateMovementMatrix()
@@ -268,8 +284,8 @@ class GameW(OwnW):
             emptyAccessibleCors.append((18,j))
         self.placeValueInMatrixOnListCoordinates(1, m, emptyAccessibleCors)
         
-        corsAccessibleToGhosts = [(13,12),(14,12)]
-        for i in range(11,17):
+        corsAccessibleToGhosts = [(14,12),(13,14),(15,14)]
+        for i in [12,14,16]:
             for j in range(13,16):
                 corsAccessibleToGhosts.append((i,j))
         self.placeValueInMatrixOnListCoordinates(2, m, corsAccessibleToGhosts)
@@ -288,6 +304,7 @@ class GameW(OwnW):
                 (6,8),(21,8),
                 (12,11),(15,11),
                 (6,14),(9,14),(18,14),(21,14),
+                    (12,14),(14,14),(16,14),
                 (9,17),(18,17),
                 (6,20),(9,20),(18,20),(21,20),
                 (6,23),(9,23),(12,23),(15,23),(18,23),(21,23),

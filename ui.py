@@ -13,12 +13,20 @@ class SettingsError(Exception):
     pass
 
 class KeyHandler():
-    def __init__(self):
+    def __init__(self, MWindow):
+        self.MWindow = MWindow
         self.pressedKey = None # format in strings: "Key_G"
     
     def keyPressed(self, currentWidget, e):
         self.currentWidget = str(currentWidget)
         self.pressedKey = str(Qt.Key(e.key())).split(".")[-1]
+        print(self.pressedKey, self.currentWidget, self.MWindow.settings.findKeyMeaning(self.pressedKey))
+        
+        if self.currentWidget == "GameW" and self.MWindow.settings.findKeyMeaning(self.pressedKey) == "Pause":
+            self.MWindow.GameW.pauseOrUnpauseGame()
+        elif self.MWindow.settings.findKeyMeaning(self.pressedKey) == "Esc":
+            if self.currentWidget != "MenuW":
+                self.MWindow.toMenuW()
 
 class Settings():
     """
