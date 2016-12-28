@@ -1,5 +1,8 @@
 """
     Handles characters, meaning packman and the ghosts.
+    
+    Ghost AI:
+        http://gameinternals.com/post/2072558330/understanding-pac-man-ghost-behavior
 """
 
 #from sound import PlaySound
@@ -45,6 +48,10 @@ class Body():
     def moveToStart(self):
         self.x = self.xStart
         self.y = self.yStart
+        self.setParameters()
+    
+    def setParameters(self):
+        pass
     
     def setThings(self, settings):
         pass
@@ -70,7 +77,6 @@ class Pacman(Body, Movement):
         self.colour = settings.PACMANCOLOUR
         self.speed = settings.PACMANSPEED
         self.mouthAngleSpeed = settings.PACMANMOUTHANGLESPEED
-        self.setParameters()
         self.setMovement()
     
     def setSize(self, settings):
@@ -89,10 +95,6 @@ class Pacman(Body, Movement):
         self.alive = True
         self.extraLives = 3
         self.moving = False
-    
-    def moveToStart(self):
-        Body.moveToStart(self)
-        self.setParameters()
     
     def setThings(self, settings):
         # Map keys
@@ -159,6 +161,10 @@ class Ghost(Body, Movement):
     def setSize(self, settings):
         self.size = settings.GHOSTSIZE
     
+    def setParameters(self):
+        self.atBeginning = True
+        self.chasing = True
+    
     def setGhostIndex(self, ghostIndex):
         self.ghostIndex = ghostIndex
         try:
@@ -179,6 +185,9 @@ class Ball(Body):
     
     def setSize(self, settings):
         self.size = settings.BALLSIZE
+    
+    def setParameters(self):
+        self.eaten = False
     
     def draw(self, painter):
         Body.draw(self, painter)

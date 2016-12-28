@@ -115,9 +115,20 @@ class GameW(OwnW):
         self.drawBodyList(self.ghostList, painter)
         self.drawBodyList(self.pacmanList, painter)
         
-        #self.drawMowementMatrix(painter) # Debug
+        self.drawGhostIntersections(painter) # Debug
+        self.drawMowementMatrix(painter) # Debug
         
         painter.end()
+    
+    def drawGhostIntersections(self, painter):
+        # For debug purposes.
+        painter.setPen(QPen())
+        painter.setBrush(Qt.red)
+        k = self.settings.corScale
+        (xOffset, yOffset) = self.settings.corOffset
+        size = k/2
+        for cor in self.ghostIntersectionList:
+            painter.drawRect(k*(cor[0] + xOffset) -size/2, k*(cor[1] + yOffset) -size/2, size, size)
     
     def drawMowementMatrix(self, painter):
         # For debug purposes.
@@ -136,7 +147,7 @@ class GameW(OwnW):
                     else:
                         colour = Qt.gray
                     painter.setBrush(colour)
-                    painter.drawRect(k*(i + xOffset), k*(j + yOffset), size, size)
+                    painter.drawRect(k*(i + xOffset) -size/2, k*(j + yOffset) -size/2, size, size)
     
     def drawBodyList(self, bodyList, painter):
         for b in bodyList:
@@ -149,6 +160,7 @@ class GameW(OwnW):
         self.ballCors = self.generateBallGCoordinateList()
         self.powerupCors = [(1,3), (26,3), (1,23), (26,23)]
         self.movementMatrix = self.generateMovementMatrix()
+        self.ghostIntersectionList = self.generateGhostIntersectionList()
     
     @staticmethod
     def generateBallGCoordinateList():
@@ -255,6 +267,18 @@ class GameW(OwnW):
         for corTupple in corList:
             matrix[corTupple[0]][corTupple[1]] = value
     
+    @staticmethod
+    def generateGhostIntersectionList():
+        return([(6,1),(12,1),(15,1),(21,1),
+                (1,5),(6,5),(9,5),(12,5),(15,5),(18,5),(21,5),(26,5),
+                (6,8),(21,8),
+                (12,11),(15,11),
+                (6,14),(9,14),(18,14),(21,14),
+                (9,17),(18,17),
+                (6,20),(9,20),(18,20),(21,20),
+                (6,23),(9,23),(12,23),(15,23),(18,23),(21,23),
+                (3,26),(24,26),
+                (12,29),(15,29)])
     
     def modifyCoordinateLists(self):
         self.pacmanCor         = self.modifyTuppleList(self.pacmanCor)
