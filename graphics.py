@@ -65,13 +65,12 @@ class GameW(OwnW):
     def __init__(self, MWindow):
         super().__init__(MWindow)
         self.keyHandler = MWindow.keyHandler
+        self.backgroundImage = QPixmap("files/game_backgroung.png")
     
     def __str__(self):
         return "GameW"
     
     def startGame(self):
-        self.backImage = QPixmap("misc/game_backgroung.png")
-        
         self.timer = QTimer()
         self.timer.timeout.connect(self.timerEventFPS)
         self.timer.start(1000/self.settings.fps) # [ms]
@@ -108,7 +107,7 @@ class GameW(OwnW):
         painter.begin(self)
         
         painter.drawPixmap(0,0,self.settings.gameAreaSize[0],
-                           self.settings.gameAreaSize[1], self.backImage)
+                           self.settings.gameAreaSize[1], self.backgroundImage)
         
         self.drawBodyList(self.fruitList, painter)
         self.drawBodyList(self.powerupList, painter)
