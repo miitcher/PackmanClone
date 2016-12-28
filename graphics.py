@@ -70,7 +70,7 @@ class GameW(OwnW):
         return "GameW"
     
     def startGame(self):
-        self.backImage = QPixmap("misc/game_backgroung2.png")
+        self.backImage = QPixmap("misc/game_backgroung.png")
         
         self.timer = QTimer()
         self.timer.timeout.connect(self.timerEventFPS)
@@ -79,8 +79,6 @@ class GameW(OwnW):
         self.timerG = QTimer()
         self.timerG.timeout.connect(self.timerEventGFPS)
         self.timerG.start(1000/self.settings.gfps) # [ms]
-        
-        print("fps & gfps:",self.settings.fps, self.settings.gfps)
     
     def timerEventFPS(self):
         self.update()
@@ -117,11 +115,7 @@ class GameW(OwnW):
         self.drawBodyList(self.ballList, painter)
         self.drawBodyList(self.ghostList, painter)
         self.drawBodyList(self.pacmanList, painter)
-        """
-        # remove wall items (they slow things down
-        self.drawBodyList(self.ghostWallList, painter)
-        self.drawBodyList(self.wallList, painter)
-        """
+        
         #self.drawMowementMatrix(painter) # Debug
         
         painter.end()
@@ -153,107 +147,9 @@ class GameW(OwnW):
         self.pacmanCor = [(13.5,23)]
         self.fruitCor = [(13.5,17)]
         self.ghostCors = [(13.5,11),(11.5,14),(13.5,14),(15.5,14)]
-        self.wallEdgeCors = self.generateWallEdgeGCoordinateList()
-        self.ghostWallEdgeCors = self.generateGhostWallEdgeGCoordinateList()
         self.ballCors = self.generateBallGCoordinateList()
         self.powerupCors = [(1,3), (26,3), (1,23), (26,23)]
         self.movementMatrix = self.generateMovementMatrix()
-    
-    @staticmethod
-    def generateWallEdgeGCoordinateList():
-        """
-        rows and columns start at count 0
-        and increase to the right and down
-        Coordinates are stored as tuples:
-        (x,y)
-        x is column
-        y is row
-        """
-        l=[]
-        for i in range(0,28):
-            # y 0 & 30
-            l.append((i,0))
-            l.append((i,30))
-            if i not in [0,1,26,27]:
-                # y 27 & 28
-                if i not in [12,15]:
-                    l.append((i,27))
-                    l.append((i,28))
-                
-                if i not in [6,21]:
-                    # y 2-4
-                    if i not in [12,15]:
-                        l.append((i,2))
-                        l.append((i,4))
-                        if i not in [3,4,8,9,10,17,18,19,23,24]:
-                            l.append((i,3))
-                    # y 6 & 7
-                    if i not in [9,18]:
-                        l.append((i,6))
-                        l.append((i,7))
-                    # y 21 & 22
-                    if i not in [12,15]:
-                        l.append((i,21))
-                        l.append((i,22))
-            # y 9 & 13 & 15 & 19 & 24 & 25
-            if i not in [0,6,21,27]:
-                if i not in [12,15]:
-                    l.append((i,9))
-                if i not in range(9,19):
-                    l.append((i,13))
-                    l.append((i,15))
-                if i not in [9,18]:
-                    l.append((i,19))
-                    if i not in [3,24]:
-                        l.append((i,24))
-                        l.append((i,25))
-        # x 0 & 27
-        for i in range(1,30):
-            if i not in [10,11,12,14,16,17,18]:
-                l.append((0,i))
-                l.append((27,i))
-        # y 10 & 18
-        for i in range(5,23):
-            if i not in [6,21]:
-                if i not in [12,15]:
-                    l.append((i,10))
-                if i not in [9,18]:
-                    l.append((i,18))
-        # y 1 & 20
-        for i in [1,20]:
-            l.append((13,i))
-            l.append((14,i))
-        # y 11 & 12 & 16 & 17
-        for i in [11,12,16,17]:
-            for j in [5,7,8,19,20,22]:
-                l.append((j,i))
-        # y 8 & 26
-        for i in [7,8,13,14,19,20]:
-            l.append((i,8))
-            l.append((i,26))
-        # y 23
-        for i in [4,5,22,23]:
-            l.append((i,23))
-        return l
-    
-    @staticmethod
-    def generateGhostWallEdgeGCoordinateList():
-        """
-        rows and columns start at count 0
-        and increase to the right and down
-        Coordinates are stored as tuples:
-        (x,y)
-        x is column
-        y is row
-        """
-        l=[]
-        for i in range(10,18):
-            l.append((i,12))
-            l.append((i,16))
-        for i in [13,14,15]:
-            l.append((10,i))
-            l.append((17,i))
-        return l
     
     @staticmethod
     def generateBallGCoordinateList():
@@ -365,8 +261,6 @@ class GameW(OwnW):
         self.pacmanCor         = self.modifyTuppleList(self.pacmanCor)
         self.fruitCor          = self.modifyTuppleList(self.fruitCor)
         self.ghostCors         = self.modifyTuppleList(self.ghostCors)
-        self.wallEdgeCors      = self.modifyTuppleList(self.wallEdgeCors)
-        self.ghostWallEdgeCors = self.modifyTuppleList(self.ghostWallEdgeCors)
         self.ballCors          = self.modifyTuppleList(self.ballCors)
         self.powerupCors       = self.modifyTuppleList(self.powerupCors)
     
@@ -389,8 +283,6 @@ class GameW(OwnW):
         for ghost in self.ghostList:
             ghost.setGhostIndex(i)
             i += 1
-        self.wallList       = self.createBodyListFromCorList("Wall", self.wallEdgeCors)
-        self.ghostWallList  = self.createBodyListFromCorList("GhostWall", self.ghostWallEdgeCors)
         self.ballList       = self.createBodyListFromCorList("Ball", self.ballCors)
         self.powerupList    = self.createBodyListFromCorList("Powerup", self.powerupCors)
     

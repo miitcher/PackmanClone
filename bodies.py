@@ -171,36 +171,6 @@ class Ghost(Body, Movement):
         painter.setBrush(self.colour)
         painter.drawRect(self.x, self.y, self.size, self.size)
 
-class Wall(Body):
-    def __init__(self, bodyInput):
-        super().__init__(bodyInput)
-        [coordinateTupple, settings] = bodyInput
-        self.wallThickness = settings.WALLTHICKNESS
-        self.colour = settings.WALLCOLOUR
-    
-    def setSize(self, settings):
-        self.size = settings.WALLLENGTH
-    
-    def setThings(self, settings):
-        # vertical line
-        self.startPoint = QPoint(self.x + self.size/2, self.y)
-        self.endPoint   = QPoint(self.x + self.size/2, self.y + self.size)
-        # horisontal line
-        self.startPoint2 = QPoint(self.x, self.y + self.size/2)
-        self.endPoint2   = QPoint(self.x + self.size, self.y + self.size/2)
-    
-    def draw(self, painter):
-        Body.draw(self, painter)
-        pen = QPen(self.colour, self.wallThickness, Qt.SolidLine)
-        painter.setPen(pen)
-        painter.drawLine(self.startPoint, self.endPoint)
-        painter.drawLine(self.startPoint2, self.endPoint2)
-
-class GhostWall(Wall):
-    def __init__(self, bodyInput):
-        super().__init__(bodyInput)
-        #[coordinateTupple, settings] = bodyInput
-
 class Ball(Body):
     def __init__(self, bodyInput):
         super().__init__(bodyInput)
@@ -240,7 +210,7 @@ class Fruit(Ball):
     def __init__(self, bodyInput):
         super().__init__(bodyInput)
         [coordinateTupple, settings] = bodyInput
-        #self.colour = settings.FRUITCOLOUR
+        self.colour = settings.FRUITCOLOUR
     
     def setSize(self, settings):
         self.size = settings.FRUITSIZE

@@ -60,6 +60,16 @@ class Movement():
         xD = abs(x0-round(x0))
         yD = abs(y0-round(y0))
         
+        # move trough "teleport"
+        if round(y0) == 14:
+            rx0 = round(x0)
+            if rx0 == 0 and self.direction == LEFT and xD < 0.001:
+                self.x = self.corScale * (self.corOffset[0] + 27) - self.size/2
+                return
+            if rx0 == 27 and self.direction == RIGHT and xD < 0.001:
+                self.x = self.corScale * (self.corOffset[0]) - self.size/2
+                return
+        
         if self.direction == LEFT:
             if yD < 0.001 and (xD > 0.001 or self.movementMatrix[round(x0)-1][round(y0)] in self.accessibleNodesList):
                 self.x -= self.dLen

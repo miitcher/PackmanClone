@@ -8,10 +8,10 @@
     
     TODO:
         Write more tests.
-        Make better drawn walls.
         Make better ghost drawing (propably static images).
         Implement ghost AI (could be just random).
         Implement collision detection.
+        Implement eating.
         
         Implement highscores.
         Implement settings menu.

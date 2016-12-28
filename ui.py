@@ -247,11 +247,8 @@ class Settings():
         the variables.
         """
         k = self.corScale
-        print(k)
         # Relative sizes [k * GCor]
-        self.WALLTHICKNESS   = k * 0.1
-        self.WALLLENGTH      = k * 1
-        self.PACMANSIZE      = k * 2 - (4 * self.WALLTHICKNESS)
+        self.PACMANSIZE      = k * 1.6
         self.GHOSTSIZE       = self.PACMANSIZE
         self.BALLSIZE        = k * 0.3
         self.POWERUPSIZE     = self.BALLSIZE * 2.6
@@ -265,7 +262,6 @@ class Settings():
         self.GHOSTSPEED      = self.PACMANSPEED
         self.SLOWGHOSTSPEED  = self.GHOSTSPEED/2
         # Colours
-        self.WALLCOLOUR      = Qt.blue
         self.PACMANCOLOUR    = Qt.yellow
         self.GHOSTCOLOURLIST = [Qt.red, Qt.cyan, QColor(255,192,203), QColor(255,165,0)]
                                 # red, cyan, pink, orange
