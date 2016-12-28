@@ -70,7 +70,7 @@ class GameW(OwnW):
         return "GameW"
     
     def startGame(self):
-        self.backImage = QPixmap("misc/game_backgroung.png")
+        self.backImage = QPixmap("misc/game_backgroung2.png")
         
         self.timer = QTimer()
         self.timer.timeout.connect(self.timerEventFPS)
@@ -117,11 +117,11 @@ class GameW(OwnW):
         self.drawBodyList(self.ballList, painter)
         self.drawBodyList(self.ghostList, painter)
         self.drawBodyList(self.pacmanList, painter)
-        
+        """
         # remove wall items (they slow things down
         self.drawBodyList(self.ghostWallList, painter)
         self.drawBodyList(self.wallList, painter)
-        
+        """
         #self.drawMowementMatrix(painter) # Debug
         
         painter.end()
