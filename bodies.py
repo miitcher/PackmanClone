@@ -7,7 +7,7 @@
 
 #from sound import PlaySound
 
-from physics import Movement
+from physics import Movement, GhostAI
 
 from PySide.QtCore import *
 from PySide.QtGui import *
@@ -148,34 +148,52 @@ class Pacman(Body, Movement):
         self.firstAngle = 90*self.direction + self.halfAngleOfMouth
         self.spanAngle = 360 - 2*self.halfAngleOfMouth
 
-class Ghost(Body, Movement):
+class Ghost(Body, Movement, GhostAI):
     def __init__(self, bodyInput):
         [coordinateTupple, settings] = bodyInput
         Body.__init__(self, bodyInput)
         Movement.__init__(self, settings, [1,2])
+        GhostAI.__init__(self, settings)
         self.ghostColourList = settings.GHOSTCOLOURLIST
         self.colour = Qt.green
-        self.speed = settings.GHOSTSPEED
+        self.fastSpeed = settings.GHOSTSPEED
         self.slowSpeed = settings.SLOWGHOSTSPEED
+        self.speed = self.fastSpeed
+        self.setMovement()
     
     def setSize(self, settings):
         self.size = settings.GHOSTSIZE
     
     def setParameters(self):
-        self.atBeginning = True
+        self.free = False
         self.chasing = True
     
     def setGhostIndex(self, ghostIndex):
-        self.ghostIndex = ghostIndex
+        self.ghostIndex = ghostIndex # is integer 0,1,2 or 3
         try:
             self.colour = self.ghostColourList[self.ghostIndex]
         except IndexError:
             self.colour = Qt.green
+        self.setBeginningDirection()
+    
+    def setBeginningDirection(self):
+        if self.ghostIndex == 0:
+            self.direction = LEFT
+            self.free = True
+        elif self.ghostIndex in [1,3]:
+            self.direction = UP
+            self.free = False
+        elif self.ghostIndex == 2:
+            self.free = False
+            self.direction = DOWN
     
     def draw(self, painter):
         Body.draw(self, painter)
         painter.setBrush(self.colour)
         painter.drawRect(self.x, self.y, self.size, self.size)
+    
+    def process(self):
+        self.AIProcess()
 
 class Ball(Body):
     def __init__(self, bodyInput):
@@ -220,6 +238,7 @@ class Fruit(Ball):
         super().__init__(bodyInput)
         [coordinateTupple, settings] = bodyInput
         self.colour = settings.FRUITCOLOUR
+        self.visible = False
     
     def setSize(self, settings):
         self.size = settings.FRUITSIZE

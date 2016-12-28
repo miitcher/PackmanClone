@@ -2,6 +2,8 @@
     Handles collision between walls, ghosts and the character.
 """
 
+from random import randint, choice
+
 # Directions
 LEFT  = 2
 RIGHT = 0
@@ -52,7 +54,11 @@ class Movement():
     
     def setMovement(self):
         self.dLen = self.dt * self.speed # smallest length
-        self.dAng = self.dt * self.mouthAngleSpeed # smallest angle
+        try:
+            self.dAng = self.dt * self.mouthAngleSpeed # smallest angle
+        except AttributeError:
+            # the mouth angle is unique for pacman
+            pass
     
     def pMove(self):
         x0 = ((self.x + self.size/2)/self.corScale - self.corOffset[0])
@@ -141,6 +147,61 @@ class Movement():
                 self.mouthMovementDirection = OPENING
                 return
         self.halfAngleOfMouth = newAngle
+
+class GhostAI():
+    def __init__(self, settings):
+        self.ghostIntersectionList = settings.ghostIntersectionList
+        self.moving = True
+    
+    def AIProcess(self):
+        if not self.free:
+            return
+        
+        if self.moving:
+            self.pMove()
+            self.checkIntersection()
+        else:
+            self.newDirection()
+    
+    def newDirection(self):
+        upDownList = [UP, DOWN]
+        leftRightList = [LEFT, RIGHT]
+        possibleDirections = self.possibleDirections()
+        if self.direction in leftRightList:
+            newDirection = choice(upDownList)
+            while newDirection not in possibleDirections:
+                newDirection = choice(upDownList)
+        else:
+            newDirection = choice(leftRightList)
+            while newDirection not in possibleDirections:
+                newDirection = choice(leftRightList)
+        self.direction = newDirection
+        self.moving = True
+    
+    def checkIntersection(self):
+        x0 = ((self.x + self.size/2)/self.corScale - self.corOffset[0])
+        y0 = ((self.y + self.size/2)/self.corScale - self.corOffset[1])
+        xD = abs(x0-round(x0))
+        yD = abs(y0-round(y0))
+        
+        if xD < 0.001 and yD < 0.001 and (round(x0),round(y0)) in self.ghostIntersectionList:
+            if randint(0,1):
+                self.newDirection()
+    
+    def possibleDirections(self):
+        possibleDirections = []
+        rx0 = round((self.x + self.size/2)/self.corScale - self.corOffset[0])
+        ry0 = round((self.y + self.size/2)/self.corScale - self.corOffset[1])
+        
+        if self.movementMatrix[rx0-1][ry0] in self.accessibleNodesList:
+            possibleDirections.append(LEFT)
+        if self.movementMatrix[rx0+1][ry0] in self.accessibleNodesList:
+            possibleDirections.append(RIGHT)
+        if self.movementMatrix[rx0][ry0-1] in self.accessibleNodesList:
+            possibleDirections.append(UP)
+        if self.movementMatrix[rx0][ry0+1] in self.accessibleNodesList:
+            possibleDirections.append(DOWN)
+        return(possibleDirections)
 
 class Collision():
     """

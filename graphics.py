@@ -71,19 +71,32 @@ class GameW(OwnW):
         return "GameW"
     
     def startGame(self):
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.timerEventFPS)
-        self.timer.start(1000/self.settings.fps) # [ms]
+        self.timerFPS = QTimer()
+        self.timerFPS.timeout.connect(self.timerEventFPS)
+        self.timerFPS.start(1000/self.settings.fps) # [ms]
         
-        self.timerG = QTimer()
-        self.timerG.timeout.connect(self.timerEventGFPS)
-        self.timerG.start(1000/self.settings.gfps) # [ms]
+        self.timerGame = QTimer()
+        self.timerGame.timeout.connect(self.timerEventGameFPS)
+        self.timerGame.start(1000/self.settings.gfps) # [ms]
+        
+        self.nextGhostToSpawn = 1 # first ghost is already free
+        self.timerGhost = QTimer()
+        self.timerGhost.timeout.connect(self.timerEventGhost)
+        self.timerGhost.start(1000*self.settings.ghostSpawnIntervall)
     
     def timerEventFPS(self):
         self.update()
     
-    def timerEventGFPS(self):
+    def timerEventGameFPS(self):
         self.pacmanList[0].process()
+        for ghost in self.ghostList:
+            ghost.process()
+    
+    def timerEventGhost(self):
+        self.ghostList[self.nextGhostToSpawn].free = True
+        self.nextGhostToSpawn += 1
+        if self.nextGhostToSpawn == 4:
+            self.timerGhost.stop()
     
     def setupWidget(self):
         """
@@ -96,6 +109,7 @@ class GameW(OwnW):
         self.generateCoordinates()
         self.modifyCoordinateLists()
         self.settings.movementMatrix = self.movementMatrix
+        self.settings.ghostIntersectionList = self.ghostIntersectionList
         self.createBodies()
         print("GameW set")
     
@@ -269,7 +283,7 @@ class GameW(OwnW):
     
     @staticmethod
     def generateGhostIntersectionList():
-        return([(6,1),(12,1),(15,1),(21,1),
+        return([(6,1),(21,1),
                 (1,5),(6,5),(9,5),(12,5),(15,5),(18,5),(21,5),(26,5),
                 (6,8),(21,8),
                 (12,11),(15,11),

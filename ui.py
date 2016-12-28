@@ -247,6 +247,8 @@ class Settings():
         the variables.
         """
         k = self.corScale
+        # Time [s]
+        self.ghostSpawnIntervall = 5
         # Relative sizes [k * GCor]
         self.PACMANSIZE      = k * 1.6
         self.GHOSTSIZE       = self.PACMANSIZE
