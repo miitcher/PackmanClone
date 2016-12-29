@@ -7,7 +7,7 @@
 
 #from sound import PlaySound
 
-from physics import Movement, GhostAI
+from physics import Movement, GhostAI, PacmanCollisionDetection
 
 from PySide.QtCore import *
 from PySide.QtGui import *
@@ -24,7 +24,6 @@ CLOSING = 5
 class Body():
     def __init__(self, bodyInput):
         [coordinateTupple, settings] = bodyInput
-        #super().__init__(settings.getFPS())
         xRaw = coordinateTupple[0]
         yRaw = coordinateTupple[1]
         self.setSize(settings)
@@ -42,12 +41,17 @@ class Body():
     def __str__(self):
         return("(%s, %s)" % (self.x, self.y))
     
+    def setGCor(self, corScale, corOffset):
+        self.x0 = ((self.x + self.size/2)/corScale - corOffset[0])
+        self.y0 = ((self.y + self.size/2)/corScale - corOffset[1])
+
     def setSize(self, settings):
         self.size = 1
     
     def moveToStart(self):
         self.x = self.xStart
         self.y = self.yStart
+        self.alive = True
         self.setParameters()
     
     def setParameters(self):
@@ -68,11 +72,14 @@ class Body():
         painter.setBrush(QBrush())
         painter.setPen(QPen())
 
-class Pacman(Body, Movement):
+class Pacman(Body, Movement, PacmanCollisionDetection):
     def __init__(self, bodyInput):
-        [coordinateTupple, settings, keyHandler] = bodyInput
+        [coordinateTupple, settings, keyHandler, GameW] = bodyInput
+        self.corScale = settings.corScale
+        self.corOffset = settings.corOffset
         Body.__init__(self, [coordinateTupple, settings])
         Movement.__init__(self, settings, [1])
+        PacmanCollisionDetection.__init__(self, GameW.ghostList, GameW.ballList, GameW.powerupList, GameW.fruitList)
         self.keyHandler = keyHandler
         self.colour = settings.PACMANCOLOUR
         self.speed = settings.PACMANSPEED
@@ -92,7 +99,6 @@ class Pacman(Body, Movement):
         self.firstAngle = self.maxHalfAngleOfMouth
         self.spanAngle = 360 - 2*self.maxHalfAngleOfMouth
         self.baseAngle = 0
-        self.alive = True
         self.extraLives = 3
         self.moving = False
     
@@ -122,20 +128,22 @@ class Pacman(Body, Movement):
         painter.drawPie(self.x, self.y, self.size, self.size, 16*self.firstAngle, 16*self.spanAngle)
     
     def process(self):
-        pKey = self.keyHandler.pressedKey
-        if self.alive and pKey:
-            if pKey in self.MoveLeft:
-                self.pChangeDirection(LEFT)
-            elif pKey in self.MoveRight:
-                self.pChangeDirection(RIGHT)
-            elif pKey in self.MoveUp:
-                self.pChangeDirection(UP)
-            elif pKey in self.MoveDown:
-                self.pChangeDirection(DOWN)
-            self.keyHandler.pressedKey = None
-        if self.moving:
-            self.pChangeDirection(self.nextDirection)
-            self.move()
+        if self.alive:
+            pKey = self.keyHandler.pressedKey
+            if pKey:
+                if pKey in self.MoveLeft:
+                    self.pChangeDirection(LEFT)
+                elif pKey in self.MoveRight:
+                    self.pChangeDirection(RIGHT)
+                elif pKey in self.MoveUp:
+                    self.pChangeDirection(UP)
+                elif pKey in self.MoveDown:
+                    self.pChangeDirection(DOWN)
+                self.keyHandler.pressedKey = None
+            if self.moving:
+                self.pChangeDirection(self.nextDirection)
+                self.move()
+            self.checkCollisions()
     
     def move(self):
         self.pMove()
@@ -147,10 +155,31 @@ class Pacman(Body, Movement):
         self.pMoveMouth()
         self.firstAngle = 90*self.direction + self.halfAngleOfMouth
         self.spanAngle = 360 - 2*self.halfAngleOfMouth
+    
+    def gotEaten(self):
+        self.alive = False
+        self.extraLives -= 1
+        print("U DED!\tExtra lives left:", self.extraLives)
+    
+    def ateGhost(self):
+        # you get points and maby extra lives?
+        pass
+    
+    def ateBall(self):
+        # points
+        pass
+    
+    def atePowerup(self):
+        print("SO STRONK!")
+    
+    def ateFruit(self):
+        print("MUCH POINTS!")
 
 class Ghost(Body, Movement, GhostAI):
     def __init__(self, bodyInput):
         [coordinateTupple, settings] = bodyInput
+        self.corScale = settings.corScale
+        self.corOffset = settings.corOffset
         Body.__init__(self, bodyInput)
         Movement.__init__(self, settings, [1,2])
         GhostAI.__init__(self, settings)
@@ -196,18 +225,24 @@ class Ghost(Body, Movement, GhostAI):
     
     def process(self):
         self.AIProcess()
+    
+    def gotEaten(self):
+        self.alive = False
 
 class Ball(Body):
     def __init__(self, bodyInput):
         super().__init__(bodyInput)
         [coordinateTupple, settings] = bodyInput
         self.colour = settings.BALLCOLOUR
+        self.setGCor(settings.corScale, settings.corOffset)
     
     def setSize(self, settings):
         self.size = settings.BALLSIZE
     
-    def setParameters(self):
-        self.eaten = False
+    def hide(self):
+        self.x = -10
+        self.y = -10
+        self.alive = False
     
     def draw(self, painter):
         Body.draw(self, painter)
@@ -240,7 +275,6 @@ class Fruit(Ball):
         super().__init__(bodyInput)
         [coordinateTupple, settings] = bodyInput
         self.colour = settings.FRUITCOLOUR
-        self.visible = False
     
     def setSize(self, settings):
         self.size = settings.FRUITSIZE

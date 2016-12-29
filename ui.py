@@ -20,7 +20,7 @@ class KeyHandler():
     def keyPressed(self, currentWidget, e):
         self.currentWidget = str(currentWidget)
         self.pressedKey = str(Qt.Key(e.key())).split(".")[-1]
-        print(self.pressedKey, self.currentWidget, self.MWindow.settings.findKeyMeaning(self.pressedKey))
+        #print(self.pressedKey, self.currentWidget, self.MWindow.settings.findKeyMeaning(self.pressedKey))
         
         if self.currentWidget == "GameW" and self.MWindow.settings.findKeyMeaning(self.pressedKey) == "Pause":
             self.MWindow.GameW.pauseOrUnpauseGame()

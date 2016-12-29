@@ -9,9 +9,11 @@
     TODO:
         Write more tests.
         Make better ghost drawing (propably static images).
-        Implement ghost AI (could be just random).
-        Implement collision detection.
-        Implement eating.
+        Implement score
+        Implement lives.
+        Implement resetting stage when every ball is eaten.
+        Implement powerup effects.
+        Implement fruit spawning and better images.
         
         Implement highscores.
         Implement settings menu.
@@ -43,6 +45,9 @@ class MainWindow(QMainWindow):
             return
         self.keyHandler.keyPressed(self.centralWidget(), e)
     
+    def moveToCenter(self):
+        self.move(QApplication.desktop().screen().rect().center()- self.rect().center())
+    
     def toMenuW(self):
         self.resize(round(self.settings.width*self.settings.menuScale),
                     round(self.settings.height*self.settings.menuScale))
@@ -50,6 +55,7 @@ class MainWindow(QMainWindow):
         self.menuW = MenuW(self)
         self.menuW.setupWidget()
         self.setCentralWidget(self.menuW)
+        self.moveToCenter()
     
     def toGameW(self):
         #self.setCursor(Qt.BlankCursor)
@@ -63,6 +69,7 @@ class MainWindow(QMainWindow):
             self.resize(self.settings.gameAreaSize[0],
                         self.settings.gameAreaSize[1])
         self.setCentralWidget(self.GameW)
+        self.moveToCenter()
         self.GameW.startGame()
     
     def toSettingsW(self):
@@ -70,12 +77,14 @@ class MainWindow(QMainWindow):
         self.SettingsW = SettingsW(self)
         self.SettingsW.setupWidget()
         self.setCentralWidget(self.SettingsW)
+        self.moveToCenter()
     
     def toHighscoresW(self):
         self.setCursor(Qt.ArrowCursor)
         self.HighscoresW = HighscoresW(self)
         self.HighscoresW.setupWidget()
         self.setCentralWidget(self.HighscoresW)
+        self.moveToCenter()
 
 def handleBackup():
     """

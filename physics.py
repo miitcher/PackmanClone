@@ -47,8 +47,6 @@ class Movement():
     """
     def __init__(self, settings, accessibleNodesList):
         self.dt = 1 / settings.gfps # smallest time
-        self.corScale = settings.corScale
-        self.corOffset = settings.corOffset
         self.movementMatrix = settings.movementMatrix
         self.accessibleNodesList = accessibleNodesList
     
@@ -203,7 +201,7 @@ class GhostAI():
             possibleDirections.append(DOWN)
         return(possibleDirections)
 
-class Collision():
+class PacmanCollisionDetection():
     """
     A collision can happen between:
         pacman - ghost
@@ -213,5 +211,47 @@ class Collision():
     Walls don't have hitboxes because
     of the movwmentPoints.
     """
-    def __init__(self):
-        pass
+    def __init__(self, ghostList, ballList, powerupList, fruitList):
+        self.GEatRange = 0.25
+        self.ghostList = ghostList
+        self.ballList = ballList
+        self.powerupList = powerupList
+        self.fruitList = fruitList
+    
+    def checkCollisions(self):
+        self.setGCor(self.corScale, self.corOffset)
+        self.checkBalls()
+        self.checkPowerups()
+        self.checkFruit()
+        self.checkGhosts()
+    
+    def checkGhosts(self):
+        for ghost in self.ghostList:
+            ghost.setGCor(self.corScale, self.corOffset)
+            if ghost.alive and abs(ghost.x0-self.x0) < self.GEatRange and abs(ghost.y0-self.y0) < self.GEatRange:
+                if ghost.chasing:
+                    self.gotEaten()
+                    break
+                else:
+                    ghost.gotEaten()
+                    self.ateGhost()
+    
+    def checkBalls(self):
+        for ball in self.ballList:
+            if ball.alive and abs(ball.x0-self.x0) < self.GEatRange and abs(ball.y0-self.y0) < self.GEatRange:
+                ball.hide()
+                self.ateBall()
+                break
+    
+    def checkPowerups(self):
+        for powerup in self.powerupList:
+            if powerup.alive and abs(powerup.x0-self.x0) < self.GEatRange and abs(powerup.y0-self.y0) < self.GEatRange:
+                powerup.hide()
+                self.atePowerup()
+                break
+    
+    def checkFruit(self):
+        fruit = self.fruitList[0]
+        if fruit.alive and abs(fruit.x0-self.x0) < self.GEatRange and abs(fruit.y0-self.y0) < self.GEatRange:
+            fruit.hide()
+            self.ateFruit()

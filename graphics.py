@@ -330,7 +330,6 @@ class GameW(OwnW):
     
     
     def createBodies(self):
-        self.pacmanList     = self.createBodyListFromCorList("Pacman", self.pacmanCor)
         self.fruitList      = self.createBodyListFromCorList("Fruit", self.fruitCor)
         self.ghostList      = self.createBodyListFromCorList("Ghost", self.ghostCors)
         i = 0
@@ -339,13 +338,15 @@ class GameW(OwnW):
             i += 1
         self.ballList       = self.createBodyListFromCorList("Ball", self.ballCors)
         self.powerupList    = self.createBodyListFromCorList("Powerup", self.powerupCors)
+        # pacman created last, so it can setup it's collisionDetection
+        self.pacmanList     = self.createBodyListFromCorList("Pacman", self.pacmanCor)
     
     def createBodyListFromCorList(self, BodyClass, CorList):
         list = []
         for cor in CorList:
             bodyInput = [cor, self.settings]
             if BodyClass == "Pacman":
-                bodyInput = [cor, self.settings, self.keyHandler]
+                bodyInput = [cor, self.settings, self.keyHandler, self]
                 list.append(Pacman(bodyInput))
             elif BodyClass == "Fruit":
                 list.append(Fruit(bodyInput))
